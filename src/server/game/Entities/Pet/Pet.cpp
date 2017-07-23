@@ -281,8 +281,8 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     if (!is_temporary_summoned)
     {
         // permanent controlled pets store state in DB
-        Tokens tokens = StrSplit(fields[16].GetString(), " ");
-
+        Tokens tokens(fields[16].GetString(), ' ');
+        
         if (tokens.size() != 20)
             return false;
 
@@ -298,7 +298,6 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         }
 
         //init teach spells
-        tokens = StrSplit(fields[17].GetString(), " ");
         for (iter = tokens.begin(), index = 0; index < 4; ++iter, ++index)
         {
             uint32 tmp = atol(tokens[index]);

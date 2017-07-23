@@ -1450,8 +1450,8 @@ bool Player::BuildEnumData(QueryResult_AutoPtr result, WorldPacket * p_data)
         *p_data << uint32(petFamily);
     }
 
-    Tokens data = StrSplit(fields[19].GetCppString(), " ");
-
+    Tokens data(fields[19].GetString(), ' ');
+    
     for (uint8 slot = 0; slot < EQUIPMENT_SLOT_END; ++slot)
     {
         uint32 visualbase = PLAYER_VISIBLE_ITEM_1_0 + (slot * MAX_VISIBLE_ITEM_OFFSET);
@@ -14175,7 +14175,7 @@ bool Player::LoadValuesArrayFromDB(Tokens& data, uint64 guid)
 
     Field *fields = result->Fetch();
 
-    data (fields[0].GetCppString(), ' ');
+    data (fields[0].GetString(), ' ');
 
     return true;
 }
