@@ -286,7 +286,7 @@ bool WorldSession::Update(PacketFilter& updater)
                         LogUnprocessedTail(packet);
                     break;
                 case STATUS_NEVER:
-                    sLog->outDebug( "SESSION: received not allowed opcode %s (0x%.4X)", LookupOpcodeName(packet->GetOpcode()), packet->GetOpcode());
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "SESSION: received not allowed opcode %s (0x%.4X)", LookupOpcodeName(packet->GetOpcode()), packet->GetOpcode());
                     break;
                 case STATUS_UNHANDLED:
                     sLog->outDebug(LOG_FILTER_NETWORKIO, "SESSION: received not handled opcode %s (0x%.4X)", LookupOpcodeName(packet->GetOpcode()), packet->GetOpcode());

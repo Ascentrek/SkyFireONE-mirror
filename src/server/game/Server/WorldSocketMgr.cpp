@@ -146,7 +146,7 @@ class ReactorRunnable : protected ACE_Task_Base
 
         virtual int svc()
         {
-            sLog->outDebug ("Network Thread Starting");
+            sLog->outDebug (LOG_FILTER_NETWORKIO, "Network Thread Starting");
 
             WorldDatabase.ThreadStart();
 
@@ -183,7 +183,7 @@ class ReactorRunnable : protected ACE_Task_Base
 
             WorldDatabase.ThreadEnd();
 
-            sLog->outDebug ("Network Thread Exitting");
+            sLog->outDebug (LOG_FILTER_NETWORKIO, "Network Thread Exitting");
 
             return 0;
         }

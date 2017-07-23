@@ -1,21 +1,21 @@
 /*
-* Copyright (C) 2010-2013 Project SkyFire <http://www.projectskyfire.org/>
-* Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
-* Copyright (C) 2005-2013 MaNGOS <http://getmangos.com/>
-*
-* This program is free software; you can redistribute it and/or modify it
-* under the terms of the GNU General Public License as published by the
-* Free Software Foundation; either version 2 of the License, or (at your
-* option) any later version.
-*
-* This program is distributed in the hope that it will be useful, but WITHOUT
-* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
-* more details.
-*
-* You should have received a copy of the GNU General Public License along
-* with this program. If not, see <http://www.gnu.org/licenses/>.
-*/
+ * Copyright (C) 2010-2013 Project SkyFire <http://www.projectskyfire.org/>
+ * Copyright (C) 2010-2013 Oregon <http://www.oregoncore.com/>
+ * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2013 MaNGOS <http://getmangos.com/>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "Log.h"
@@ -25,7 +25,8 @@
 #include "TemporarySummon.h"
 
 TempSummon::TempSummon(SummonPropertiesEntry const *properties, Unit *owner) :
-Creature(), m_Properties(properties), m_type(TEMPSUMMON_MANUAL_DESPAWN), m_timer(0), m_lifetime(0)
+Creature(), m_type(TEMPSUMMON_MANUAL_DESPAWN), m_timer(0), m_lifetime(0)
+, m_Properties(properties)
 {
     m_summonerGUID = owner ? owner->GetGUID() : 0;
     m_summonMask |= SUMMON_MASK_SUMMON;
@@ -45,7 +46,7 @@ void TempSummon::Update(uint32 diff)
         UnSummon();
         return;
     }
-    switch(m_type)
+    switch (m_type)
     {
         case TEMPSUMMON_MANUAL_DESPAWN:
             break;
@@ -160,7 +161,7 @@ void TempSummon::Update(uint32 diff)
         }
         default:
             UnSummon();
-            sLog.outError("Temporary summoned creature (entry: %u) has unknown type %u. ",GetEntry(),m_type);
+            sLog->outError("Temporary summoned creature (entry: %u) has unknown type %u. ", GetEntry(), m_type);
             break;
     }
 }
@@ -251,7 +252,7 @@ void TempSummon::RemoveFromWorld()
                     owner->m_SummonSlot[slot] = 0;
 
     //if (GetOwnerGUID())
-    //    sLog.outError("Unit %u has owner guid when removed from world", GetEntry());
+    //    sLog->outError("Unit %u has owner guid when removed from world", GetEntry());
 
     Creature::RemoveFromWorld();
 }

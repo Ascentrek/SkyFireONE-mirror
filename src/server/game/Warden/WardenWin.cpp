@@ -325,7 +325,7 @@ void WardenWin::RequestData()
     stream << "Sent check id's: ";
     for (std::vector<uint32>::iterator itr = SendDataId.begin(); itr != SendDataId.end(); ++itr)
         stream << *itr << " ";
-    sLog->outDebug(stream.str().c_str());
+    sLog->outDebug(LOG_FILTER_WARDEN, stream.str().c_str());
 }
 
 void WardenWin::HandleData(ByteBuffer &buff)

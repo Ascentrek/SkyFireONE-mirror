@@ -164,15 +164,15 @@ void PlayerTaxi::InitTaxiNodesForLevel(uint32 race, uint32 level)
 
 void PlayerTaxi::LoadTaxiMask(const char* data)
 {
-    Tokens tokens = StrSplit(data, " ");
+	Tokens tokens(data, ' ');
 
-    int index;
+	uint8 index;
     Tokens::iterator iter;
     for (iter = tokens.begin(), index = 0;
         (index < TaxiMaskSize) && (iter != tokens.end()); ++iter, ++index)
     {
         // load and set bits only for existed taxi nodes
-        m_taximask[index] = sTaxiNodesMask[index] & uint32(atol((*iter).c_str()));
+        m_taximask[index] = sTaxiNodesMask[index] & uint32(atol(*iter));
     }
 }
 
@@ -194,11 +194,11 @@ bool PlayerTaxi::LoadTaxiDestinationsFromString(const std::string& values)
 {
     ClearTaxiDestinations();
 
-    Tokens tokens = StrSplit(values, " ");
+	Tokens tokens(values, ' ');
 
     for (Tokens::iterator iter = tokens.begin(); iter != tokens.end(); ++iter)
     {
-        uint32 node = uint32(atol(iter->c_str()));
+		uint32 node = uint32(atol(*iter));
         AddTaxiDestination(node);
     }
 
@@ -14175,17 +14175,17 @@ bool Player::LoadValuesArrayFromDB(Tokens& data, uint64 guid)
 
     Field *fields = result->Fetch();
 
-    data = StrSplit(fields[0].GetCppString(), " ");
+    data (fields[0].GetCppString(), ' ');
 
     return true;
 }
 
 uint32 Player::GetUInt32ValueFromArray(Tokens const& data, uint16 index)
 {
-    if (index >= data.size())
-        return 0;
+	if (index >= data.size())
+		return 0;
 
-    return (uint32)atoi(data[index].c_str());
+	return (uint32)atoi(data[index]);
 }
 
 float Player::GetFloatValueFromArray(Tokens const& data, uint16 index)
@@ -14197,7 +14197,7 @@ float Player::GetFloatValueFromArray(Tokens const& data, uint16 index)
     return result;
 }
 
-uint32 Player::GetUInt32ValueFromDB(uint16 index, uint64 guid)
+uint32 Player::GetUInt32ValueFromDB(Tokens& data, uint16 index, uint64 guid)
 {
     Tokens data;
     if (!LoadValuesArrayFromDB(data, guid))
@@ -16463,7 +16463,7 @@ void Player::SavePositionInDB(uint32 mapid, float x, float y, float z, float o, 
        << "',position_z='"<<z<<"',orientation='"<<o<<"',map='"<<mapid
        << "',zone='"<<zone<<"',trans_x='0',trans_y='0',trans_z='0',"
        << "transguid='0',taxi_path='' WHERE guid='"<< GUID_LOPART(guid) <<"'";
-    sLog->outDebug(ss.str().c_str());
+    sLog->outDebug(LOG_FILTER_NETWORKIO, ss.str().c_str());
     CharacterDatabase.Execute(ss.str().c_str());
 }
 
@@ -16506,7 +16506,7 @@ void Player::SetUInt32ValueInArray(Tokens& tokens, uint16 index, uint32 value)
     tokens[index] = buf;
 }
 
-void Player::SetUInt32ValueInDB(uint16 index, uint32 value, uint64 guid)
+/*void Player::SetUInt32ValueInDB(uint16 index, uint32 value, uint64 guid)
 {
     Tokens tokens;
     if (!LoadValuesArrayFromDB(tokens, guid))
@@ -16527,7 +16527,7 @@ void Player::SetFloatValueInDB(uint16 index, float value, uint64 guid)
     uint32 temp;
     memcpy(&temp, &value, sizeof(value));
     Player::SetUInt32ValueInDB(index, temp, guid);
-}
+}*/
 
 void Player::SendAttackSwingNotStanding()
 {

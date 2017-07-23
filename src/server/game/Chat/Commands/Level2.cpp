@@ -834,7 +834,7 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
         return false;
     }
 
-    sLog->outDebug(GetSkyFireString(LANG_GAMEOBJECT_CURRENT), gInfo->name, db_lowGUID, x, y, z, o);
+    sLog->outDebug(LOG_FILTER_NETWORKIO, GetSkyFireString(LANG_GAMEOBJECT_CURRENT), gInfo->name, db_lowGUID, x, y, z, o);
 
     map->Add(pGameObj);
 
