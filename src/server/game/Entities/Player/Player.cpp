@@ -164,9 +164,9 @@ void PlayerTaxi::InitTaxiNodesForLevel(uint32 race, uint32 level)
 
 void PlayerTaxi::LoadTaxiMask(const char* data)
 {
-	Tokens tokens(data, ' ');
+    Tokens tokens(data, ' ');
 
-	uint8 index;
+    uint8 index;
     Tokens::iterator iter;
     for (iter = tokens.begin(), index = 0;
         (index < TaxiMaskSize) && (iter != tokens.end()); ++iter, ++index)
@@ -194,11 +194,11 @@ bool PlayerTaxi::LoadTaxiDestinationsFromString(const std::string& values)
 {
     ClearTaxiDestinations();
 
-	Tokens tokens(values, ' ');
+    Tokens tokens(values, ' ');
 
     for (Tokens::iterator iter = tokens.begin(); iter != tokens.end(); ++iter)
     {
-		uint32 node = uint32(atol(*iter));
+        uint32 node = uint32(atol(*iter));
         AddTaxiDestination(node);
     }
 
@@ -574,8 +574,8 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
     SetUInt32Value(PLAYER_GUILDRANK, 0);
     SetUInt32Value(PLAYER_GUILD_TIMESTAMP, 0);
 
-	for (int i = 0; i < KNOWN_TITLES_SIZE; ++i)
-		SetUInt64Value(PLAYER__FIELD_KNOWN_TITLES + i, 0);  // 0=disabled
+    for (int i = 0; i < KNOWN_TITLES_SIZE; ++i)
+        SetUInt64Value(PLAYER__FIELD_KNOWN_TITLES + i, 0);  // 0=disabled
     SetUInt32Value(PLAYER_CHOSEN_TITLE, 0);
 
     SetUInt32Value(PLAYER_FIELD_KILLS, 0);
@@ -1455,7 +1455,7 @@ bool Player::BuildEnumData(QueryResult_AutoPtr result, WorldPacket * p_data)
     
     for (uint8 slot = 0; slot < EQUIPMENT_SLOT_END; ++slot)
     {
-		uint32 visualbase = PLAYER_VISIBLE_ITEM_1_0 + (slot * MAX_VISIBLE_ITEM_OFFSET);
+        uint32 visualbase = PLAYER_VISIBLE_ITEM_1_0 + (slot * MAX_VISIBLE_ITEM_OFFSET);
         uint32 item_id = GetUInt32ValueFromArray(data, visualbase);
         const ItemPrototype * proto = sObjectMgr->GetItemPrototype(item_id);
         if (!proto)
@@ -5650,11 +5650,11 @@ void Player::CheckAreaExploreAndOutdoor()
         return;
     int offset = areaFlag / 32;
 
-	if (offset >= PLAYER_EXPLORED_ZONES_SIZE)
-	{
-		sLog->outError("Wrong area flag %u in map data for (X: %f Y: %f) point to field PLAYER_EXPLORED_ZONES_1 + %u ( %u must be < %u ).", areaFlag, GetPositionX(), GetPositionY(), offset, offset, PLAYER_EXPLORED_ZONES_SIZE);
-		return;
-	} 
+    if (offset >= PLAYER_EXPLORED_ZONES_SIZE)
+    {
+        sLog->outError("Wrong area flag %u in map data for (X: %f Y: %f) point to field PLAYER_EXPLORED_ZONES_1 + %u ( %u must be < %u ).", areaFlag, GetPositionX(), GetPositionY(), offset, offset, PLAYER_EXPLORED_ZONES_SIZE);
+        return;
+    } 
 
     uint32 val = (uint32)(1 << (areaFlag % 32));
     uint32 currFields = GetUInt32Value(PLAYER_EXPLORED_ZONES_1 + offset);
@@ -14170,10 +14170,10 @@ bool Player::LoadPositionFromDB(uint32& mapid, float& x, float& y, float& z, flo
 
 uint32 Player::GetUInt32ValueFromArray(Tokens const& data, uint16 index)
 {
-	if (index >= data.size())
-		return 0;
+    if (index >= data.size())
+        return 0;
 
-	return (uint32)atoi(data[index]);
+    return (uint32)atoi(data[index]);
 }
 
 float Player::GetFloatValueFromArray(Tokens const& data, uint16 index)
@@ -14188,19 +14188,19 @@ float Player::GetFloatValueFromArray(Tokens const& data, uint16 index)
 void Player::_LoadIntoDataField(const char* data, uint32 startOffset, uint32 count)
 {
     if (!data)
-	 return;
+     return;
 
-	Tokens tokens(data, ' ');
+    Tokens tokens(data, ' ');
 
-	if (tokens.size() != count)
-	 return;
+    if (tokens.size() != count)
+    return;
 
-	Tokens::iterator iter;
-	uint32 index;
-	for (iter = tokens.begin(), index = 0; index < count; ++iter, ++index)
-	{
-		m_uint32Values[startOffset + index] = uint32(atol(*iter));
-	}
+    Tokens::iterator iter;
+    uint32 index;
+    for (iter = tokens.begin(), index = 0; index < count; ++iter, ++index)
+    {
+        m_uint32Values[startOffset + index] = uint32(atol(*iter));
+    }
 }
 
 bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
@@ -14277,9 +14277,9 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     SetUInt32Value(PLAYER_FLAGS, fields[11].GetUInt32());
     SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[48].GetUInt32());
 
-	//SetUInt64Value(PLAYER_FIELD_KNOWN_CURRENCIES, fields[47].GetUInt64());
-	
-	SetUInt32Value(PLAYER_AMMO_ID, fields[63].GetUInt32());
+    //SetUInt64Value(PLAYER_FIELD_KNOWN_CURRENCIES, fields[47].GetUInt64());   //check this
+    
+    SetUInt32Value(PLAYER_AMMO_ID, fields[63].GetUInt32());
 
     // cleanup inventory related item value fields (its will be filled correctly in _LoadInventory)
     for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
@@ -14648,17 +14648,17 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     // rest bonus can only be calculated after InitStatsForLevel()
     m_rest_bonus = fields[21].GetFloat();
  
-	if (time_diff > 0)
+    if (time_diff > 0)
     {
-         //speed collect rest bonus in offline, in logout, far from tavern, city (section/in hour)
-         float bubble0 = 0.031f;
-		 //speed collect rest bonus in offline, in logout, in tavern, city (section/in hour)
-		 float bubble1 = 0.125f;
-		 float bubble = fields[23].GetUInt32() > 0
+        //speed collect rest bonus in offline, in logout, far from tavern, city (section/in hour)
+        float bubble0 = 0.031f;
+        //speed collect rest bonus in offline, in logout, in tavern, city (section/in hour)
+        float bubble1 = 0.125f;
+        float bubble = fields[23].GetUInt32() > 0
             ? bubble1*sWorld->getRate(RATE_REST_OFFLINE_IN_TAVERN_OR_CITY)
-			: bubble0*sWorld->getRate(RATE_REST_OFFLINE_IN_WILDERNESS);
+            : bubble0*sWorld->getRate(RATE_REST_OFFLINE_IN_WILDERNESS);
 
-		 SetRestBonus(GetRestBonus() + time_diff*((float)GetUInt32Value(PLAYER_NEXT_LEVEL_XP) / 72000)*bubble);
+        SetRestBonus(GetRestBonus() + time_diff*((float)GetUInt32Value(PLAYER_NEXT_LEVEL_XP) / 72000)*bubble);
     }
 
     // apply original stats mods before spell loading or item equipment that call before equip _RemoveStatsMods()
@@ -15923,7 +15923,7 @@ void Player::SaveToDB()
         << finiteAlways(GetTeleportDest().GetPositionZ()) << ", "
         << finiteAlways(GetTeleportDest().GetOrientation()) << ", ";
 
-	}
+    }
     ss << (IsInWorld() ? 1 : 0) << ", ";
 
     ss << m_cinematic << ", ";
@@ -15989,20 +15989,20 @@ void Player::SaveToDB()
     ss << GetSession()->GetLatency();
     ss << "')";
 
-	ss << "', '";
-	for (uint32 i = 0; i < EQUIPMENT_SLOT_END * 2; ++i)
-	{
-		ss << GetUInt32Value(PLAYER_VISIBLE_ITEM_1_0 + i) << " ";
-	}
+    ss << "', '";
+    for (uint32 i = 0; i < EQUIPMENT_SLOT_END * 2; ++i)
+    {
+        ss << GetUInt32Value(PLAYER_VISIBLE_ITEM_1_0 + i) << " ";   //check this
+    }
 
-	ss << "',";
+    ss << "',";
 
     ss << GetUInt32Value(PLAYER_AMMO_ID) << ", '";
     for (uint32 i = 0; i < KNOWN_TITLES_SIZE * 2; ++i)
-	{
-	    ss << GetUInt32Value(PLAYER__FIELD_KNOWN_TITLES + i) << " ";
-	}
-	ss << "')";
+    {
+        ss << GetUInt32Value(PLAYER__FIELD_KNOWN_TITLES + i) << " ";
+    }
+    ss << "')";
 
     CharacterDatabase.BeginTransaction();
 
