@@ -423,7 +423,7 @@
 void AddScripts()
 {
     AddExampleScripts();
-    AddSpellScripts();
+    //AddSpellScripts();
 #ifdef SCRIPTS
     AddWorldScripts();
     AddEasternKingdomsScripts();

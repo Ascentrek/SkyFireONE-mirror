@@ -95,4 +95,4 @@ set(scripts_STAT_SRCS
   #Outland/Zones/zangarmarsh.cpp
 )
 
-message("  -> Prepared: #Outland")
+message("  -> Prepared: Outland Scripts")
