@@ -27,11 +27,11 @@
 
 #ifdef SCRIPTS
 //world
-//void AddSC_areatrigger_scripts();
 //void AddSC_boss_emeriss();
 //void AddSC_boss_taerar();
 //void AddSC_boss_ysondre();
 //void AddSC_generic_creature();
+//void AddSC_areatrigger_scripts();
 //void AddSC_go_scripts();
 //void AddSC_guards();
 //void AddSC_item_scripts();
@@ -451,11 +451,11 @@ void AddSpellScripts()
 void AddWorldScripts()
 {
 #ifdef SCRIPTS
-    //AddSC_areatrigger_scripts();
     //AddSC_boss_emeriss();
     //AddSC_boss_taerar();
     //AddSC_boss_ysondre();
     //AddSC_generic_creature();
+    //AddSC_areatrigger_scripts();	
     //AddSC_go_scripts();
     //AddSC_guards();
     //AddSC_item_scripts();
@@ -463,7 +463,6 @@ void AddWorldScripts()
     //AddSC_npc_innkeeper();
     //AddSC_npcs_special();
     //AddSC_npc_taxi();
-    //AddSC_achievement_scripts();
     //AddSC_npc_mount();                      // npc mount
     //AddSC_chat_log();
 #endif
