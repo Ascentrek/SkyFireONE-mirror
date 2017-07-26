@@ -38,13 +38,13 @@ AccountOpResult CreateAccount(std::string username, std::string password)
     if (GetId(username))
         return AOR_NAME_ALREADY_EXIST;                       // username does already exist
 
-	QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT 1 FROM account WHERE username = '%s'", username.c_str());
-	if (result)
-		return AOR_NAME_ALREADY_EXIST;                       // username does already exist
+    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT 1 FROM account WHERE username = '%s'", username.c_str());
+    if (result)
+        return AOR_NAME_ALREADY_EXIST;                       // username does already exist
 
-	if (!LoginDatabase.PExecute("INSERT INTO account(username, sha_pass_hash, joindate) VALUES('%s', Sha1(CONCAT('%s', ':', '%s')), NOW())", username.c_str(), username.c_str(), password.c_str()))
-		return AOR_DB_INTERNAL_ERROR;                       // unexpected error
-	LoginDatabase.Execute("INSERT INTO realmcharacters (realmid, acctid, numchars) SELECT realmlist.id, account.id, 0 FROM realmlist, account LEFT JOIN realmcharacters ON acctid=account.id WHERE acctid IS NULL");
+    if (!LoginDatabase.PExecute("INSERT INTO account(username, sha_pass_hash, joindate) VALUES('%s', Sha1(CONCAT('%s', ':', '%s')), NOW())", username.c_str(), username.c_str(), password.c_str()))
+        return AOR_DB_INTERNAL_ERROR;                       // unexpected error
+    LoginDatabase.Execute("INSERT INTO realmcharacters (realmid, acctid, numchars) SELECT realmlist.id, account.id, 0 FROM realmlist, account LEFT JOIN realmcharacters ON acctid=account.id WHERE acctid IS NULL");
 
     return AOR_OK;                                          // everything's fine
 }
@@ -52,15 +52,15 @@ AccountOpResult CreateAccount(std::string username, std::string password)
 AccountOpResult DeleteAccount(uint32 accountId)
 {
     // Check if accounts exists
-	QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT 1 FROM account WHERE id='%d'", accountId);
+    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT 1 FROM account WHERE id='%d'", accountId);
 
     if (!result)
         return AOR_NAME_DOES_NOT_EXIST;                    // account doesn't exist
 
     // Obtain accounts characters
-	result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE account='%d'", accountId);    
-	
-	if (result)
+    result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE account='%d'", accountId);    
+    
+    if (result)
     {
         do
         {
@@ -80,14 +80,14 @@ AccountOpResult DeleteAccount(uint32 accountId)
     }
 
     // table realm specific but common for all characters of account for realm
-	CharacterDatabase.PExecute("DELETE FROM character_tutorial WHERE account = '%u'", accountId);
+    CharacterDatabase.PExecute("DELETE FROM character_tutorial WHERE account = '%u'", accountId);
     
-	LoginDatabase.BeginTransaction();
+    LoginDatabase.BeginTransaction();
 
-	bool res =
-		LoginDatabase.PExecute("DELETE FROM account WHERE id='%d'", accountId) &&
-		LoginDatabase.PExecute("DELETE FROM account_access WHERE id ='%d'", accountId) &&
-		LoginDatabase.PExecute("DELETE FROM realmcharacters WHERE acctid='%d'", accountId);
+    bool res =
+        LoginDatabase.PExecute("DELETE FROM account WHERE id='%d'", accountId) &&
+        LoginDatabase.PExecute("DELETE FROM account_access WHERE id ='%d'", accountId) &&
+        LoginDatabase.PExecute("DELETE FROM realmcharacters WHERE acctid='%d'", accountId);
 
 
     LoginDatabase.CommitTransaction();
@@ -98,7 +98,7 @@ AccountOpResult DeleteAccount(uint32 accountId)
 AccountOpResult ChangeUsername(uint32 accountId, std::string newUsername, std::string newPassword)
 {
     // Check if accounts exists
-	QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT 1 FROM account WHERE id='%d'", accountId);
+    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT 1 FROM account WHERE id='%d'", accountId);
 
     if (!result)
         return AOR_NAME_DOES_NOT_EXIST;  // account doesn't exist
@@ -112,11 +112,11 @@ AccountOpResult ChangeUsername(uint32 accountId, std::string newUsername, std::s
     normalizeString(newUsername);
     normalizeString(newPassword);
 
-	LoginDatabase.EscapeString(newUsername);
-	LoginDatabase.EscapeString(newPassword);
+    LoginDatabase.EscapeString(newUsername);
+    LoginDatabase.EscapeString(newPassword);
 
-	if (!LoginDatabase.PExecute("UPDATE account SET username='%s', sha_pass_hash=Sha1(CONCAT('%s', ':', '%s')) WHERE id='%d'", newUsername.c_str(), newUsername.c_str(), newPassword.c_str(), accountId))
-		return AOR_DB_INTERNAL_ERROR;                       // unexpected error
+    if (!LoginDatabase.PExecute("UPDATE account SET username='%s', sha_pass_hash=Sha1(CONCAT('%s', ':', '%s')) WHERE id='%d'", newUsername.c_str(), newUsername.c_str(), newPassword.c_str(), accountId))
+        return AOR_DB_INTERNAL_ERROR;                       // unexpected error
 
     return AOR_OK;
 }
@@ -134,44 +134,44 @@ AccountOpResult ChangePassword(uint32 accountId, std::string newPassword)
     normalizeString(username);
     normalizeString(newPassword);
 
-	LoginDatabase.EscapeString(newPassword);
-	// also reset s and v to force update at next realmd login
-	if (!LoginDatabase.PExecute("UPDATE account SET v='0', s='0', sha_pass_hash=Sha1(" _CONCAT3_("username", "':'", "'%s'")") WHERE id='%d'", newPassword.c_str(), accountId))
-		return AOR_DB_INTERNAL_ERROR;                       // unexpected error
+    LoginDatabase.EscapeString(newPassword);
+    // also reset s and v to force update at next realmd login
+    if (!LoginDatabase.PExecute("UPDATE account SET v='0', s='0', sha_pass_hash=Sha1(" _CONCAT3_("username", "':'", "'%s'")") WHERE id='%d'", newPassword.c_str(), accountId))
+        return AOR_DB_INTERNAL_ERROR;                       // unexpected error
 
     return AOR_OK;
 }
 
 uint32 GetId(std::string username)
 {
-	LoginDatabase.EscapeString(username);
-	QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT id FROM account WHERE username = '%s'", username.c_str());
-	if (!result)
-		return 0;
-	else
-	{
-		uint32 id = (*result)[0].GetUInt32();
-		return id;
-	}
+    LoginDatabase.EscapeString(username);
+    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT id FROM account WHERE username = '%s'", username.c_str());
+    if (!result)
+        return 0;
+    else
+    {
+        uint32 id = (*result)[0].GetUInt32();
+        return id;
+    }
 }
 
 uint32 GetSecurity(uint32 accountId)
 {
-	QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT gmlevel FROM account_access WHERE id = '%u'", accountId);
+    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT gmlevel FROM account_access WHERE id = '%u'", accountId);
     return (result) ? (*result)[0].GetUInt8() : SEC_PLAYER;
 }
 
 uint32 GetSecurity(uint32 accountId, int32 realmId)
 {
-	QueryResult_AutoPtr result = (realmId == -1)
-		? LoginDatabase.PQuery("SELECT gmlevel FROM account_access WHERE id = '%u' AND RealmID = '%d'", accountId, realmId)
-		: LoginDatabase.PQuery("SELECT gmlevel FROM account_access WHERE id = '%u' AND (RealmID = '%d' OR RealmID = '-1')", accountId, realmId);
-	return (result) ? (*result)[0].GetUInt8() : SEC_PLAYER;
+    QueryResult_AutoPtr result = (realmId == -1)
+        ? LoginDatabase.PQuery("SELECT gmlevel FROM account_access WHERE id = '%u' AND RealmID = '%d'", accountId, realmId)
+        : LoginDatabase.PQuery("SELECT gmlevel FROM account_access WHERE id = '%u' AND (RealmID = '%d' OR RealmID = '-1')", accountId, realmId);
+    return (result) ? (*result)[0].GetUInt8() : SEC_PLAYER;
 }
 
 bool GetName(uint32 accountId, std::string& name)
 {
-	QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = '%u'", accountId);
+    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = '%u'", accountId);
     if (result)
     {
         name = (*result)[0].GetString();
@@ -192,8 +192,8 @@ bool CheckPassword(uint32 accountId, std::string password)
     normalizeString(password);
 
 
-	QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT 1 FROM account WHERE id='%d' AND sha_pass_hash=Sha1(CONCAT(UPPER(username), ':', UPPER('%s')))", accountId, password.c_str());
-	if (result)
+    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT 1 FROM account WHERE id='%d' AND sha_pass_hash=Sha1(CONCAT(UPPER(username), ':', UPPER('%s')))", accountId, password.c_str());
+    if (result)
 
     
     return (result) ? true : false;
@@ -202,15 +202,15 @@ bool CheckPassword(uint32 accountId, std::string password)
 uint32 GetCharactersCount(uint32 accountId)
 {
     // check character count
-	QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT COUNT(guid) FROM characters WHERE account = '%d'", accountId);
-	if (result)
-	{
-		Field *fields = result->Fetch();
-		uint32 charcount = fields[0].GetUInt32();
-		return charcount;
-	}
-	else
-		return 0;
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT COUNT(guid) FROM characters WHERE account = '%d'", accountId);
+    if (result)
+    {
+        Field *fields = result->Fetch();
+        uint32 charcount = fields[0].GetUInt32();
+        return charcount;
+    }
+    else
+        return 0;
 }
 
 bool normalizeString(std::string& utf8String)
