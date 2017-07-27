@@ -14279,7 +14279,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
     //SetUInt64Value(PLAYER_FIELD_KNOWN_CURRENCIES, fields[47].GetUInt64());   //check this
     
-    SetUInt32Value(PLAYER_AMMO_ID, fields[63].GetUInt32());
+    SetUInt32Value(PLAYER_AMMO_ID, fields[59].GetUInt32());
 
     // cleanup inventory related item value fields (its will be filled correctly in _LoadInventory)
     for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
@@ -14305,10 +14305,10 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     InitPrimaryProfessions();                               // to max set before any spell loaded
 
     // init saved position, and fix it later if problematic
-    uint32 transGUID = fields[31].GetUInt32();
+    uint32 transGUID = fields[30].GetUInt32();
     Relocate(fields[12].GetFloat(), fields[13].GetFloat(), fields[14].GetFloat(), fields[16].GetFloat());
     uint32 mapId = fields[15].GetUInt32();
-    uint32 instanceId = fields[58].GetFloat();
+    uint32 instanceId = fields[56].GetFloat();
 
     SetDifficulty(fields[38].GetUInt32());                  // may be changed in _LoadGroup
     std::string taxi_nodes = fields[37].GetCppString();
