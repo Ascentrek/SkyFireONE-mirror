@@ -470,7 +470,7 @@ bool Transport::AddPassenger(Player* passenger)
         m_passengers.insert(passenger);
     }
     
-    sScriptMgr.OnAddPassenger(this, passenger);
+    sScriptMgr->OnAddPassenger(this, passenger);
     return true;
 }
 
@@ -479,7 +479,7 @@ bool Transport::RemovePassenger(Player* passenger)
     if (m_passengers.erase(passenger))
         sLog->outDetail("Player %s removed from transport %s.", passenger->GetName(), GetName());
        
-    sScriptMgr.OnRemovePassenger(this, passenger);
+    sScriptMgr->OnRemovePassenger(this, passenger);
     return true;
 }
 
