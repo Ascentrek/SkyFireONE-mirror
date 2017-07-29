@@ -232,7 +232,7 @@ bool WorldSession::Update(PacketFilter& updater)
                     }
                     else if (_player->IsInWorld())
                     {
-                        sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet));
+                        sScriptMgr.OnPacketReceive(m_Socket, WorldPacket(*packet));
                         (this->*opHandle.handler)(*packet);
                         if (sLog->IsOutDebug() && packet->rpos() < packet->wpos())
                             LogUnprocessedTail(packet);
@@ -248,7 +248,7 @@ bool WorldSession::Update(PacketFilter& updater)
                     else
                     {
                         // not expected _player or must checked in packet hanlder
-                        sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet));
+                        sScriptMgr.OnPacketReceive(m_Socket, WorldPacket(*packet));
                         (this->*opHandle.handler)(*packet);
                         if (sLog->IsOutDebug() && packet->rpos() < packet->wpos())
                             LogUnprocessedTail(packet);
@@ -261,7 +261,7 @@ bool WorldSession::Update(PacketFilter& updater)
                         LogUnexpectedOpcode(packet, "the player is still in world");
                     else
                     {
-                        sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet));
+                        sScriptMgr.OnPacketReceive(m_Socket, WorldPacket(*packet));
                         (this->*opHandle.handler)(*packet);
                         if (sLog->IsOutDebug() && packet->rpos() < packet->wpos())
                             LogUnprocessedTail(packet);
@@ -280,7 +280,7 @@ bool WorldSession::Update(PacketFilter& updater)
                     if (packet->GetOpcode() != CMSG_SET_ACTIVE_VOICE_CHANNEL)
                         m_playerRecentlyLogout = false;
                 
-                    sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet));
+                    sScriptMgr.OnPacketReceive(m_Socket, WorldPacket(*packet));
                     (this->*opHandle.handler)(*packet);
                     if (sLog->IsOutDebug() && packet->rpos() < packet->wpos())
                         LogUnprocessedTail(packet);
