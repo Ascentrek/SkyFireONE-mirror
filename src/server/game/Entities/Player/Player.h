@@ -771,54 +771,56 @@ enum PlayerRestState
 
 class PlayerTaxi
 {
-    public:
-        PlayerTaxi();
-        ~PlayerTaxi() {}
-        // Nodes
-        void InitTaxiNodesForLevel(uint32 race, uint32 level);
-        void LoadTaxiMask(const char* data);
-        void SaveTaxiMask(const char* data);
+public:
+    PlayerTaxi();
+    ~PlayerTaxi() {}
+    // Nodes
+    void InitTaxiNodesForLevel(uint32 race, uint32 level);
+    void LoadTaxiMask(const char* data);
 
-        uint32 GetTaximask(uint8 index) const { return m_taximask[index]; }
-        bool IsTaximaskNodeKnown(uint32 nodeidx) const
+    bool IsTaximaskNodeKnown(uint32 nodeidx) const
+    {
+        uint8  field = uint8((nodeidx - 1) / 32);
+        uint32 submask = 1 << ((nodeidx - 1) % 32);
+        return (m_taximask[field] & submask) == submask;
+    }
+    bool SetTaximaskNode(uint32 nodeidx)
+    {
+        uint8  field = uint8((nodeidx - 1) / 32);
+        uint32 submask = 1 << ((nodeidx - 1) % 32);
+        if ((m_taximask[field] & submask) != submask)
         {
-            uint8  field   = uint8((nodeidx - 1) / 32);
-            uint32 submask = 1<<((nodeidx-1)%32);
-            return (m_taximask[field] & submask) == submask;
+            m_taximask[field] |= submask;
+            return true;
         }
-        bool SetTaximaskNode(uint32 nodeidx)
-        {
-            uint8  field   = uint8((nodeidx - 1) / 32);
-            uint32 submask = 1<<((nodeidx-1)%32);
-            if ((m_taximask[field] & submask) != submask)
-            {
-                m_taximask[field] |= submask;
-                return true;
-            }
-            else
-                return false;
-        }
-        void AppendTaximaskTo(ByteBuffer& data, bool all);
+        else
+            return false;
+    }
+    void AppendTaximaskTo(ByteBuffer& data, bool all);
 
-        // Destinations
-        bool LoadTaxiDestinationsFromString(const std::string& values);
-        std::string SaveTaxiDestinationsToString();
+    // Destinations
+    bool LoadTaxiDestinationsFromString(const std::string& values);
+    std::string SaveTaxiDestinationsToString();
 
-        void ClearTaxiDestinations() { m_TaxiDestinations.clear(); }
-        void AddTaxiDestination(uint32 dest) { m_TaxiDestinations.push_back(dest); }
-        uint32 GetTaxiSource() const { return m_TaxiDestinations.empty() ? 0 : m_TaxiDestinations.front(); }
-        uint32 GetTaxiDestination() const { return m_TaxiDestinations.size() < 2 ? 0 : m_TaxiDestinations[1]; }
-        uint32 GetCurrentTaxiPath() const;
-        uint32 NextTaxiDestination()
-        {
-            m_TaxiDestinations.pop_front();
-            return GetTaxiDestination();
-        }
-        bool empty() const { return m_TaxiDestinations.empty(); }
-    private:
-        TaxiMask m_taximask;
-        std::deque<uint32> m_TaxiDestinations;
+    void ClearTaxiDestinations() { m_TaxiDestinations.clear(); }
+    void AddTaxiDestination(uint32 dest) { m_TaxiDestinations.push_back(dest); }
+    uint32 GetTaxiSource() const { return m_TaxiDestinations.empty() ? 0 : m_TaxiDestinations.front(); }
+    uint32 GetTaxiDestination() const { return m_TaxiDestinations.size() < 2 ? 0 : m_TaxiDestinations[1]; }
+    uint32 GetCurrentTaxiPath() const;
+    uint32 NextTaxiDestination()
+    {
+        m_TaxiDestinations.pop_front();
+        return GetTaxiDestination();
+    }
+    bool empty() const { return m_TaxiDestinations.empty(); }
+
+    friend std::ostringstream& operator<< (std::ostringstream& ss, PlayerTaxi const& taxi);
+private:
+    TaxiMask m_taximask;
+    std::deque<uint32> m_TaxiDestinations;
 };
+
+std::ostringstream& operator<< (std::ostringstream& ss, PlayerTaxi const& taxi);
 
 class Player;
 
