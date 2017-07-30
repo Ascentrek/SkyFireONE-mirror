@@ -15987,9 +15987,8 @@ void Player::SaveToDB()
     ss << ", '";
 
     ss << GetSession()->GetLatency();
-    ss << "')";
-
     ss << "', '";
+
     for (uint32 i = 0; i < EQUIPMENT_SLOT_END * 2; ++i)
     {
         ss << GetUInt32Value(PLAYER_VISIBLE_ITEM_1_0 + i) << " ";   //check this
