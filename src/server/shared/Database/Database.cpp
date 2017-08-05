@@ -67,7 +67,7 @@ Database::~Database()
 bool Database::Initialize(const char* infoString)
 {
     // Enable logging of SQL commands (usually only GM commands)
-    // (See method: PExecute)
+    // (See method: PExecuteLog)
     m_logSQL = ConfigMgr::GetBoolDefault("LogSQL", false);
     m_logsDir = ConfigMgr::GetStringDefault("LogsDir","");
     if (!m_logsDir.empty())
@@ -205,7 +205,7 @@ unsigned long Database::EscapeString(char* to, const char* from, unsigned long l
     return(mysql_real_escape_string(mMysql, to, from, length));
 }
 
-bool Database::PExecute(const char* format, ...)
+bool Database::PExecuteLog(const char* format, ...)
 {
     if (!format)
         return false;
