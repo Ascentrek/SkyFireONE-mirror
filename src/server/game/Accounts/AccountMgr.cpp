@@ -42,8 +42,8 @@ AccountOpResult CreateAccount(std::string username, std::string password)
     if (result)
         return AOR_NAME_ALREADY_EXIST;                       // username does already exist
 
-    if (!LoginDatabase.PExecute("INSERT INTO account(username, sha_pass_hash, joindate) VALUES('%s', Sha1(CONCAT('%s', ':', '%s')), NOW())", username.c_str(), username.c_str(), password.c_str()))
-        return AOR_DB_INTERNAL_ERROR;                       // unexpected error
+    LoginDatabase.PExecute("INSERT INTO account(username, sha_pass_hash, joindate) VALUES('%s', Sha1(CONCAT('%s', ':', '%s')), NOW())", username.c_str(), username.c_str(), password.c_str())
+
     LoginDatabase.Execute("INSERT INTO realmcharacters (realmid, acctid, numchars) SELECT realmlist.id, account.id, 0 FROM realmlist, account LEFT JOIN realmcharacters ON acctid=account.id WHERE acctid IS NULL");
 
     return AOR_OK;                                          // everything's fine
@@ -84,9 +84,8 @@ AccountOpResult DeleteAccount(uint32 accountId)
     
     LoginDatabase.BeginTransaction();
 
-    bool res =
-        LoginDatabase.PExecute("DELETE FROM account WHERE id='%d'", accountId) &&
-        LoginDatabase.PExecute("DELETE FROM account_access WHERE id ='%d'", accountId) &&
+        LoginDatabase.PExecute("DELETE FROM account WHERE id='%d'", accountId);
+        LoginDatabase.PExecute("DELETE FROM account_access WHERE id ='%d'", accountId);
         LoginDatabase.PExecute("DELETE FROM realmcharacters WHERE acctid='%d'", accountId);
 
 
@@ -115,8 +114,7 @@ AccountOpResult ChangeUsername(uint32 accountId, std::string newUsername, std::s
     LoginDatabase.EscapeString(newUsername);
     LoginDatabase.EscapeString(newPassword);
 
-    if (!LoginDatabase.PExecute("UPDATE account SET username='%s', sha_pass_hash=Sha1(CONCAT('%s', ':', '%s')) WHERE id='%d'", newUsername.c_str(), newUsername.c_str(), newPassword.c_str(), accountId))
-        return AOR_DB_INTERNAL_ERROR;                       // unexpected error
+    LoginDatabase.PExecute("UPDATE account SET username='%s', sha_pass_hash=Sha1(CONCAT('%s', ':', '%s')) WHERE id='%d'", newUsername.c_str(), newUsername.c_str(), newPassword.c_str(), accountId)
 
     return AOR_OK;
 }
@@ -136,8 +134,7 @@ AccountOpResult ChangePassword(uint32 accountId, std::string newPassword)
 
     LoginDatabase.EscapeString(newPassword);
     // also reset s and v to force update at next realmd login
-    if (!LoginDatabase.PExecute("UPDATE account SET v='0', s='0', sha_pass_hash=Sha1(" _CONCAT3_("username", "':'", "'%s'")") WHERE id='%d'", newPassword.c_str(), accountId))
-        return AOR_DB_INTERNAL_ERROR;                       // unexpected error
+    LoginDatabase.PExecute("UPDATE account SET v='0', s='0', sha_pass_hash=Sha1(" _CONCAT3_("username", "':'", "'%s'")") WHERE id='%d'", newPassword.c_str(), accountId)
 
     return AOR_OK;
 }
