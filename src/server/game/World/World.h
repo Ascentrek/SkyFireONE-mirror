@@ -38,7 +38,7 @@ class WorldSession;
 class Player;
 class Weather;
 struct ScriptInfo;
-class SqlResultQueue;
+class SQLResultQueue;
 class QueryResult;
 class WorldSocket;
 
@@ -258,6 +258,9 @@ enum WorldConfigs
     CONFIG_WARDEN_NUM_CHECKS,
     CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF,
     CONFIG_WARDEN_CLIENT_RESPONSE_DELAY,
+    CONFIG_MYSQL_BUNDLE_LOGINDB,
+    CONFIG_MYSQL_BUNDLE_CHARDB,
+    CONFIG_MYSQL_BUNDLE_WORLDDB,
     CONFIG_VALUE_COUNT
 };
 
@@ -683,7 +686,7 @@ class World
 
         // CLI command holder to be thread safe
         ACE_Based::LockedQueue<CliCommandHolder*, ACE_Thread_Mutex> cliCmdQueue;
-        SqlResultQueue *m_resultQueue;
+        SQLResultQueue *m_resultQueue;
 
         // next daily quests reset time
         time_t m_NextDailyQuestReset;

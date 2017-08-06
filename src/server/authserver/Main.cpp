@@ -40,7 +40,7 @@
 #endif
 
 bool StartDB();
-//void StopDB();
+void StopDB();
 
 bool stopEvent = false;      // Setting it to true stops the server
 
@@ -247,7 +247,7 @@ extern int main(int argc, char **argv)
     }
 
     // Close the Database Pool and library
-    //StopDB();
+	StopDB();
 
     sLog->outString("Halting process...");
     return 0;
@@ -256,34 +256,41 @@ extern int main(int argc, char **argv)
 // Initialize connection to the database
 bool StartDB()
 {
-    std::string dbstring = ConfigMgr::GetStringDefault("LoginDatabaseInfo", "");
-    if (dbstring.empty())
-    {
-        sLog->outError("Database not specified");
-        return false;
-    }
+	//MySQL::Library_Init();
 
-    uint8 worker_threads = ConfigMgr::GetIntDefault("LoginDatabase.WorkerThreads", 1);
-    if (worker_threads < 1 || worker_threads > 32)
-    {
-        sLog->outError("Improper value specified for LoginDatabase.WorkerThreads, defaulting to 1.");
-        worker_threads = 1;
-    }
+	std::string dbstring = ConfigMgr::GetStringDefault("LoginDatabaseInfo", "");
+	if (dbstring.empty())
+	{
+		sLog->outError("Database not specified");
+		return false;
+	}
 
-    uint8 synch_threads = ConfigMgr::GetIntDefault("LoginDatabase.SynchThreads", 1);
-    if (synch_threads < 1 || synch_threads > 32)
-    {
-        sLog->outError("Improper value specified for LoginDatabase.SynchThreads, defaulting to 1.");
-        synch_threads = 1;
-    }
+	uint8 worker_threads = ConfigMgr::GetIntDefault("LoginDatabase.WorkerThreads", 1);
+	if (worker_threads < 1 || worker_threads > 32)
+	{
+		sLog->outError("Improper value specified for LoginDatabase.WorkerThreads, defaulting to 1.");
+		worker_threads = 1;
+	}
 
-    // NOTE: While auth-server is single-threaded you should keep synch_threads == 1. 
-    // Increasing it is just silly since only 1 will be used ever.
-    if (!LoginDatabase.Initialize(dbstring.c_str()))
-    {
-        sLog->outError("Cannot connect to database");
-        return false;
-    }
+	uint8 synch_threads = ConfigMgr::GetIntDefault("LoginDatabase.SynchThreads", 1);
+	if (synch_threads < 1 || synch_threads > 32)
+	{
+		sLog->outError("Improper value specified for LoginDatabase.SynchThreads, defaulting to 1.");
+		synch_threads = 1;
+	}
 
-    return true;
+	// NOTE: While authserver is singlethreaded you should keep synch_threads == 1. Increasing it is just silly since only 1 will be used ever.
+	if (!LoginDatabase.Open(dbstring.c_str(), worker_threads))
+	{
+		sLog->outError("Cannot connect to database");
+		return false;
+	}
+
+	return true;
+}
+
+void StopDB()
+{
+	LoginDatabase.Close();
+	//MySQL::Library_End();
 }

@@ -37,7 +37,8 @@ class WDBThreadStartReq1 : public ACE_Method_Request
 
     call (void)
     {
-        WorldDatabase.ThreadStart();
+        WorldDatabase.Init_MySQL_Connection();
+        CharacterDatabase.Init_MySQL_Connection();
         return 0;
     }
 };
@@ -50,7 +51,8 @@ class WDBThreadEndReq1 : public ACE_Method_Request
 
     call (void)
     {
-        WorldDatabase.ThreadEnd();
+        WorldDatabase.End_MySQL_Connection();
+        CharacterDatabase.End_MySQL_Connection();
         return 0;
     }
 };

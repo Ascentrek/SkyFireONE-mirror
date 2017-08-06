@@ -21,6 +21,13 @@
 //add here most rarely modified headers to speed up debug build compilation
 
 #include "Common.h"
-#include "Log.h"
-#include "SqlOperations.h"
-#include "Errors.h"
+#include "Define.h"
+#include "Logging/Log.h"
+#include "DatabaseEnv.h"
+#include "Threading/Threading.h"
+#include "Database/DatabaseEnv.h"
+#include "Database/DatabaseWorker.h"
+#include "Database/SQLOperations.h"
+#include "Debugging/Errors.h"
+#include "Dynamic/TypeList.h"
+#include "Dynamic/UnorderedMap.h"

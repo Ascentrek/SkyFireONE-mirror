@@ -285,9 +285,9 @@ int Master::Run()
     ClearOnlineAccounts();
 
 	// Wait for delay threads to end
-	CharacterDatabase.HaltDelayThread();
-	WorldDatabase.HaltDelayThread();
-	LoginDatabase.HaltDelayThread();
+	CharacterDatabase.Close();
+	WorldDatabase.Close();
+	LoginDatabase.Close();
 
     sLog->outString("Halting process...");
 
@@ -373,7 +373,7 @@ bool Master::_StartDB()
     synch_threads = ConfigMgr::GetIntDefault("WorldDatabase.SynchThreads", 1);
 
     ///- Initialize the world database
-    if (!WorldDatabase.Initialize(dbstring.c_str()))
+	if (!WorldDatabase.Open(dbstring, async_threads))
     {
         sLog->outError("Cannot connect to world database %s", dbstring.c_str());
         return false;
@@ -398,7 +398,7 @@ bool Master::_StartDB()
     synch_threads = ConfigMgr::GetIntDefault("CharacterDatabase.SynchThreads", 2);
 
     ///- Initialize the Character database
-    if (!CharacterDatabase.Initialize(dbstring.c_str()))
+    if (!CharacterDatabase.Open(dbstring.c_str(), async_threads))
     {
         sLog->outError("Cannot connect to Character database %s", dbstring.c_str());
         return false;
@@ -423,7 +423,7 @@ bool Master::_StartDB()
     synch_threads = ConfigMgr::GetIntDefault("LoginDatabase.SynchThreads", 1);
 
     ///- Initialize the login database
-    if (!LoginDatabase.Initialize(dbstring.c_str()))
+    if (!LoginDatabase.Open(dbstring.c_str(), async_threads))
     {
         sLog->outError("Cannot connect to login database %s", dbstring.c_str());
         return false;
@@ -453,6 +453,16 @@ bool Master::_StartDB()
 
     sLog->outString("Using World DB: %s", sWorld->GetDBVersion());
     return true;
+}
+
+void Master::_StopDB()
+{
+	sLog->SetLogDB(false);
+	CharacterDatabase.Close();
+	WorldDatabase.Close();
+	LoginDatabase.Close();
+
+	//MySQL::Library_End();
 }
 
 ///- Clear 'online' status for all accounts with characters in this realm

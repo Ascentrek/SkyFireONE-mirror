@@ -48,7 +48,7 @@
 #include "VMapFactory.h"
 #include "GameEventMgr.h"
 #include "PoolMgr.h"
-#include "DatabaseImpl.h"
+#include "AsyncDatabaseImpl.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "InstanceSaveMgr.h"
@@ -2340,7 +2340,7 @@ void World::SendAutoBroadcast()
 
 void World::InitResultQueue()
 {
-    m_resultQueue = new SqlResultQueue;
+    m_resultQueue = new SQLResultQueue;
     CharacterDatabase.SetResultQueue(m_resultQueue);
 }
 

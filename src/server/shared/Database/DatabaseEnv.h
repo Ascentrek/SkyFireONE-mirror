@@ -26,9 +26,10 @@
 #include "Errors.h"
 #include "Field.h"
 #include "QueryResult.h"
-#include "Database.h"
+#include "Database/DatabaseWorkerPool.h"
+#include "Database/MySQLThreading.h"
 
-typedef Database DatabaseType;
+typedef DatabaseWorkerPool DatabaseType;
 
 #define _LIKE_           "LIKE"
 #define _TABLE_SIM_      "`"
@@ -39,5 +40,6 @@ extern DatabaseType WorldDatabase;
 extern DatabaseType CharacterDatabase;
 extern DatabaseType LoginDatabase;
 
-#endif
+#define MAX_QUERY_LEN 32*1024
 
+#endif

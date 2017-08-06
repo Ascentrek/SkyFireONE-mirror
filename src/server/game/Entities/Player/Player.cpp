@@ -60,7 +60,7 @@
 #include "OutdoorPvPMgr.h"
 #include "ArenaTeam.h"
 #include "Chat.h"
-#include "DatabaseImpl.h"
+#include "AsyncDatabaseImpl.h"
 #include "Spell.h"
 #include "SocialMgr.h"
 #include "Mail.h"
@@ -14179,7 +14179,7 @@ void Player::_LoadIntoDataField(const char* data, uint32 startOffset, uint32 cou
     }
 }
 
-bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
+bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 {
     //                                                       0       1        2     3     4     5        6     7     8     9            10           11
     //QueryResult *result = CharacterDatabase.PQuery("SELECT guid, account, name, race, class, gender, level, xp, money, playerBytes, playerBytes2, playerFlags, "
