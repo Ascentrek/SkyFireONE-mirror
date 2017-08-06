@@ -350,7 +350,7 @@ int Master::Run()
 ///- Initialize connection to the databases
 bool Master::_StartDB()
 {
-    //MySQL::Library_Init();
+    MySQL::Library_Init();
 
     std::string dbstring;
     uint8 async_threads, synch_threads;
@@ -462,7 +462,7 @@ void Master::_StopDB()
 	WorldDatabase.Close();
 	LoginDatabase.Close();
 
-	//MySQL::Library_End();
+	MySQL::Library_End();
 }
 
 ///- Clear 'online' status for all accounts with characters in this realm

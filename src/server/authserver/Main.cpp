@@ -256,7 +256,7 @@ extern int main(int argc, char **argv)
 // Initialize connection to the database
 bool StartDB()
 {
-	//MySQL::Library_Init();
+	MySQL::Library_Init();
 
 	std::string dbstring = ConfigMgr::GetStringDefault("LoginDatabaseInfo", "");
 	if (dbstring.empty())
@@ -292,5 +292,5 @@ bool StartDB()
 void StopDB()
 {
 	LoginDatabase.Close();
-	//MySQL::Library_End();
+	MySQL::Library_End();
 }
