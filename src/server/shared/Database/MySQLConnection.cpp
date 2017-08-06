@@ -21,6 +21,7 @@
 #include "DatabaseWorker.h"
 #include "Util.h"
 #include "Timer.h"
+#include "Log.h"
 
 MySQLConnection::MySQLConnection() :
 m_Mysql(NULL)

@@ -284,10 +284,10 @@ int Master::Run()
     ///- Clean database before leaving
     ClearOnlineAccounts();
 
-	// Wait for delay threads to end
-	CharacterDatabase.Close();
-	WorldDatabase.Close();
-	LoginDatabase.Close();
+    // Wait for delay threads to end
+    CharacterDatabase.Close();
+    WorldDatabase.Close();
+    LoginDatabase.Close();
 
     sLog->outString("Halting process...");
 
@@ -373,7 +373,7 @@ bool Master::_StartDB()
     synch_threads = ConfigMgr::GetIntDefault("WorldDatabase.SynchThreads", 1);
 
     ///- Initialize the world database
-	if (!WorldDatabase.Open(dbstring, async_threads))
+    if (!WorldDatabase.Open(dbstring, async_threads))
     {
         sLog->outError("Cannot connect to world database %s", dbstring.c_str());
         return false;
@@ -457,12 +457,12 @@ bool Master::_StartDB()
 
 void Master::_StopDB()
 {
-	sLog->SetLogDB(false);
-	CharacterDatabase.Close();
-	WorldDatabase.Close();
-	LoginDatabase.Close();
+    sLog->SetLogDB(false);
+    CharacterDatabase.Close();
+    WorldDatabase.Close();
+    LoginDatabase.Close();
 
-	MySQL::Library_End();
+    MySQL::Library_End();
 }
 
 ///- Clear 'online' status for all accounts with characters in this realm

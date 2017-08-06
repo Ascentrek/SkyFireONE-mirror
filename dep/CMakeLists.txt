@@ -22,15 +22,13 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
-  if(SERVERS)
-    add_subdirectory(acelite)
-  endif()
+  add_subdirectory(acelite)
   if(TOOLS)
     add_subdirectory(bzip2)
   endif()
-  add_subdirectory(zlib)
 endif()
 
+add_subdirectory(zlib)
 add_subdirectory(g3dlite)
 
 if(SERVERS)

@@ -26,8 +26,8 @@
 #include "Errors.h"
 #include "Field.h"
 #include "QueryResult.h"
-#include "Database/DatabaseWorkerPool.h"
-#include "Database/MySQLThreading.h"
+#include "DatabaseWorkerPool.h"
+#include "MySQLThreading.h"
 
 typedef DatabaseWorkerPool DatabaseType;
 

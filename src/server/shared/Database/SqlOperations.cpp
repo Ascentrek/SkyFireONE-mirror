@@ -25,17 +25,17 @@
  /*! Basic, ad-hoc queries. */
 BasicStatementTask::BasicStatementTask(const char* sql)
 {
-	m_sql = strdup(sql);
+    m_sql = strdup(sql);
 }
 
 BasicStatementTask::~BasicStatementTask()
 {
-	free((void*)m_sql);
+    free((void*)m_sql);
 }
 
 bool BasicStatementTask::Execute()
 {
-	return m_conn->Execute(m_sql);
+    return m_conn->Execute(m_sql);
 }
 
 /*! Transactions. */
@@ -50,166 +50,166 @@ TransactionTask::~TransactionTask()
 
 void TransactionTask::ForcefulDelete()
 {
-	while (!m_queries.empty())
-	{
-		free((void*)const_cast<char*>(m_queries.front()));
-		m_queries.pop();
-	}
+    while (!m_queries.empty())
+    {
+        free((void*)const_cast<char*>(m_queries.front()));
+        m_queries.pop();
+    }
 }
 
 bool TransactionTask::Execute()
 {
-	if (m_queries.empty())
-		return false;
+    if (m_queries.empty())
+        return false;
 
-	const char* sql;
+    const char* sql;
 
-	m_conn->BeginTransaction();
-	while (!m_queries.empty())
-	{
-		sql = m_queries.front();
-		if (!m_conn->Execute(sql))
-		{
-			free((void*)const_cast<char*>(sql));
-			m_queries.pop();
-			m_conn->RollbackTransaction();
-			ForcefulDelete();
-			return false;
-		}
+    m_conn->BeginTransaction();
+    while (!m_queries.empty())
+    {
+        sql = m_queries.front();
+        if (!m_conn->Execute(sql))
+        {
+            free((void*)const_cast<char*>(sql));
+            m_queries.pop();
+            m_conn->RollbackTransaction();
+            ForcefulDelete();
+            return false;
+        }
 
-		free((void*)const_cast<char*>(sql));
-		m_queries.pop();
-	}
+        free((void*)const_cast<char*>(sql));
+        m_queries.pop();
+    }
 
-	m_conn->CommitTransaction();
-	return true;
+    m_conn->CommitTransaction();
+    return true;
 }
 
 /*! Callback statements/holders */
 void SQLResultQueue::Update()
 {
-	/// execute the callbacks waiting in the synchronization queue
-	Skyfire::IQueryCallback* callback;
-	while (next(callback))
-	{
-		callback->Execute();
-		delete callback;
-	}
+    /// execute the callbacks waiting in the synchronization queue
+    Skyfire::IQueryCallback* callback;
+    while (next(callback))
+    {
+        callback->Execute();
+        delete callback;
+    }
 }
 
 bool SQLQueryHolder::SetQuery(size_t index, const char *sql)
 {
-	if (m_queries.size() <= index)
-	{
-		sLog->outError("Query index (%u) out of range (size: %u) for query: %s", index, (uint32)m_queries.size(), sql);
-		return false;
-	}
+    if (m_queries.size() <= index)
+    {
+        sLog->outError("Query index (%u) out of range (size: %u) for query: %s", index, (uint32)m_queries.size(), sql);
+        return false;
+    }
 
-	if (m_queries[index].first != NULL)
-	{
-		sLog->outError("Attempt assign query to holder index (%u) where other query stored (Old: [%s] New: [%s])",
-			index, m_queries[index].first, sql);
-		return false;
-	}
+    if (m_queries[index].first != NULL)
+    {
+        sLog->outError("Attempt assign query to holder index (%u) where other query stored (Old: [%s] New: [%s])",
+            index, m_queries[index].first, sql);
+        return false;
+    }
 
-	/// not executed yet, just stored (it's not called a holder for nothing)
-	m_queries[index] = SQLResultPair(strdup(sql), QueryResult_AutoPtr(NULL));
-	return true;
+    /// not executed yet, just stored (it's not called a holder for nothing)
+    m_queries[index] = SQLResultPair(strdup(sql), QueryResult_AutoPtr(NULL));
+    return true;
 }
 
 bool SQLQueryHolder::SetPQuery(size_t index, const char *format, ...)
 {
-	if (!format)
-	{
-		sLog->outError("Query (index: %u) is empty.", index);
-		return false;
-	}
+    if (!format)
+    {
+        sLog->outError("Query (index: %u) is empty.", index);
+        return false;
+    }
 
-	va_list ap;
-	char szQuery[MAX_QUERY_LEN];
-	va_start(ap, format);
-	int res = vsnprintf(szQuery, MAX_QUERY_LEN, format, ap);
-	va_end(ap);
+    va_list ap;
+    char szQuery[MAX_QUERY_LEN];
+    va_start(ap, format);
+    int res = vsnprintf(szQuery, MAX_QUERY_LEN, format, ap);
+    va_end(ap);
 
-	if (res == -1)
-	{
-		sLog->outError("SQL Query truncated (and not execute) for format: %s", format);
-		return false;
-	}
+    if (res == -1)
+    {
+        sLog->outError("SQL Query truncated (and not execute) for format: %s", format);
+        return false;
+    }
 
-	return SetQuery(index, szQuery);
+    return SetQuery(index, szQuery);
 }
 
 QueryResult_AutoPtr SQLQueryHolder::GetResult(size_t index)
 {
-	if (index < m_queries.size())
-	{
-		/// the query strings are freed on the first GetResult or in the destructor
-		if (m_queries[index].first != NULL)
-		{
-			free((void*)(const_cast<char*>(m_queries[index].first)));
-			m_queries[index].first = NULL;
-		}
-		/// when you get a result aways remember to delete it!
-		return m_queries[index].second;
-	}
-	else
-		return QueryResult_AutoPtr(NULL);
+    if (index < m_queries.size())
+    {
+        /// the query strings are freed on the first GetResult or in the destructor
+        if (m_queries[index].first != NULL)
+        {
+            free((void*)(const_cast<char*>(m_queries[index].first)));
+            m_queries[index].first = NULL;
+        }
+        /// when you get a result aways remember to delete it!
+        return m_queries[index].second;
+    }
+    else
+        return QueryResult_AutoPtr(NULL);
 }
 
 void SQLQueryHolder::SetResult(size_t index, QueryResult_AutoPtr result)
 {
-	/// store the result in the holder
-	if (index < m_queries.size())
-		m_queries[index].second = result;
+    /// store the result in the holder
+    if (index < m_queries.size())
+        m_queries[index].second = result;
 }
 
 SQLQueryHolder::~SQLQueryHolder()
 {
-	for (size_t i = 0; i < m_queries.size(); i++)
-	{
-		/// if the result was never used, free the resources
-		/// results used already (getresult called) are expected to be deleted
-		if (m_queries[i].first != NULL)
-			free((void*)(const_cast<char*>(m_queries[i].first)));
-	}
+    for (size_t i = 0; i < m_queries.size(); i++)
+    {
+        /// if the result was never used, free the resources
+        /// results used already (getresult called) are expected to be deleted
+        if (m_queries[i].first != NULL)
+            free((void*)(const_cast<char*>(m_queries[i].first)));
+    }
 }
 
 void SQLQueryHolder::SetSize(size_t size)
 {
-	/// to optimize push_back, reserve the number of queries about to be executed
-	m_queries.resize(size);
+    /// to optimize push_back, reserve the number of queries about to be executed
+    m_queries.resize(size);
 }
 
 bool SQLQueryHolderTask::Execute()
 {
-	if (!m_holder || !m_callback || !m_queue)
-		return false;
+    if (!m_holder || !m_callback || !m_queue)
+        return false;
 
-	/// we can do this, we are friends
-	std::vector<SQLQueryHolder::SQLResultPair> &queries = m_holder->m_queries;
+    /// we can do this, we are friends
+    std::vector<SQLQueryHolder::SQLResultPair> &queries = m_holder->m_queries;
 
-	for (size_t i = 0; i < queries.size(); i++)
-	{
-		/// execute all queries in the holder and pass the results
-		char const *sql = queries[i].first;
-		if (sql)
-			m_holder->SetResult(i, m_conn->Query(sql));
-	}
+    for (size_t i = 0; i < queries.size(); i++)
+    {
+        /// execute all queries in the holder and pass the results
+        char const *sql = queries[i].first;
+        if (sql)
+            m_holder->SetResult(i, m_conn->Query(sql));
+    }
 
-	/// sync with the caller thread
-	m_queue->add(m_callback);
-	return true;
+    /// sync with the caller thread
+    m_queue->add(m_callback);
+    return true;
 }
 
 bool SQLQueryTask::Execute()
 {
-	if (!m_callback || !m_queue)
-		return false;
+    if (!m_callback || !m_queue)
+        return false;
 
-	/// execute the query and store the result in the callback
-	m_callback->SetResult(m_conn->Query(m_sql));
-	/// add the callback to the sql result queue of the thread it originated from
-	m_queue->add(m_callback);
-	return true;
+    /// execute the query and store the result in the callback
+    m_callback->SetResult(m_conn->Query(m_sql));
+    /// add the callback to the sql result queue of the thread it originated from
+    m_queue->add(m_callback);
+    return true;
 }

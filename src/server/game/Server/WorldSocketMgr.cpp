@@ -149,21 +149,21 @@ class ReactorRunnable : protected ACE_Task_Base
             sLog->outDebug (LOG_FILTER_NETWORKIO, "Network Thread Starting");
 
 
-			bool needInit = true;
-			if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_LOGINDB) & MYSQL_BUNDLE_RA))
-			{
-				LoginDatabase.Init_MySQL_Connection();
-				needInit = false;
-			}
+            bool needInit = true;
+            if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_LOGINDB) & MYSQL_BUNDLE_RA))
+            {
+                LoginDatabase.Init_MySQL_Connection();
+                needInit = false;
+            }
 
-			if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_CHARDB) & MYSQL_BUNDLE_RA))
-			{
-				CharacterDatabase.Init_MySQL_Connection();
-				needInit = false;
-			}
+            if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_CHARDB) & MYSQL_BUNDLE_RA))
+            {
+                CharacterDatabase.Init_MySQL_Connection();
+                needInit = false;
+            }
 
-			if (needInit)
-				MySQL::Thread_Init();
+            if (needInit)
+                MySQL::Thread_Init();
 
 
 
@@ -198,14 +198,14 @@ class ReactorRunnable : protected ACE_Task_Base
                 }
             }
 
-			///- Free MySQL thread resources and deallocate lingering connections
-			if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_LOGINDB) & MYSQL_BUNDLE_RA))
-				LoginDatabase.End_MySQL_Connection();
-			if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_CHARDB) & MYSQL_BUNDLE_RA))
-				CharacterDatabase.End_MySQL_Connection();
+            ///- Free MySQL thread resources and deallocate lingering connections
+            if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_LOGINDB) & MYSQL_BUNDLE_RA))
+                LoginDatabase.End_MySQL_Connection();
+            if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_CHARDB) & MYSQL_BUNDLE_RA))
+                CharacterDatabase.End_MySQL_Connection();
 
-			if (needInit)
-				MySQL::Thread_End();
+            if (needInit)
+                MySQL::Thread_End();
 
             sLog->outDebug (LOG_FILTER_NETWORKIO, "Network Thread Exitting");
 

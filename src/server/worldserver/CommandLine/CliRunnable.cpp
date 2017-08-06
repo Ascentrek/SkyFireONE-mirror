@@ -223,7 +223,7 @@ bool ChatHandler::GetDeletedCharacterInfoList(DeletedInfoList& foundList, std::s
             info.accountId = fields[2].GetUInt32();
 
             // account name will be empty for not existed account
-			AccountMgr::GetName(info.accountId, info.accountName);
+            AccountMgr::GetName(info.accountId, info.accountName);
 
             info.deleteDate = time_t(fields[3].GetUInt64());
 
@@ -418,7 +418,7 @@ bool ChatHandler::HandleCharacterDeletedRestoreCommand(const char* args)
         if (newAccount && newAccount != delInfo.accountId)
         {
             delInfo.accountId = newAccount;
-			AccountMgr::GetName(newAccount, delInfo.accountName);
+            AccountMgr::GetName(newAccount, delInfo.accountName);
         }
 
         HandleCharacterDeletedRestoreHelper(delInfo);
@@ -534,7 +534,7 @@ bool ChatHandler::HandleCharacterEraseCommand(const char* args) {
     }
 
     std::string account_name;
-	AccountMgr::GetName(account_id, account_name);
+    AccountMgr::GetName(account_id, account_name);
 
     Player::DeleteFromDB(character_guid, account_id, true, true);
     PSendSysMessage(LANG_CHARACTER_DELETED, character_name.c_str(), GUID_LOPART(character_guid), account_name.c_str(), account_id);
@@ -712,28 +712,28 @@ int kb_hit_return()
 /// %Thread start
 void CliRunnable::run()
 {
-	///- Init MySQL threads or connections
-	bool needInit = true;
-	if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_WORLDDB) & MYSQL_BUNDLE_RA))
-	{
-		WorldDatabase.Init_MySQL_Connection();
-		needInit = false;
+    ///- Init MySQL threads or connections
+    bool needInit = true;
+    if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_WORLDDB) & MYSQL_BUNDLE_RA))
+    {
+        WorldDatabase.Init_MySQL_Connection();
+        needInit = false;
 }
 
-	if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_LOGINDB) & MYSQL_BUNDLE_RA))
-	{
-		LoginDatabase.Init_MySQL_Connection();
-		needInit = false;
-	}
+    if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_LOGINDB) & MYSQL_BUNDLE_RA))
+    {
+        LoginDatabase.Init_MySQL_Connection();
+        needInit = false;
+    }
 
-	if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_CHARDB) & MYSQL_BUNDLE_RA))
-	{
-		CharacterDatabase.Init_MySQL_Connection();
-		needInit = false;
-	}
+    if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_CHARDB) & MYSQL_BUNDLE_RA))
+    {
+        CharacterDatabase.Init_MySQL_Connection();
+        needInit = false;
+    }
 
-	if (needInit)
-		MySQL::Thread_Init();
+    if (needInit)
+        MySQL::Thread_Init();
 
     ///- Display the list of available CLI functions then beep
     //sLog->outString("");
@@ -801,16 +801,16 @@ void CliRunnable::run()
             World::StopNow(SHUTDOWN_EXIT_CODE);
         }
     }
-	///- Free MySQL thread resources and deallocate lingering connections
-	if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_WORLDDB) & MYSQL_BUNDLE_RA))
-		WorldDatabase.End_MySQL_Connection();
+    ///- Free MySQL thread resources and deallocate lingering connections
+    if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_WORLDDB) & MYSQL_BUNDLE_RA))
+        WorldDatabase.End_MySQL_Connection();
 
-	if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_LOGINDB) & MYSQL_BUNDLE_RA))
-		LoginDatabase.End_MySQL_Connection();
+    if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_LOGINDB) & MYSQL_BUNDLE_RA))
+        LoginDatabase.End_MySQL_Connection();
 
-	if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_CHARDB) & MYSQL_BUNDLE_RA))
-		CharacterDatabase.End_MySQL_Connection();
+    if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_CHARDB) & MYSQL_BUNDLE_RA))
+        CharacterDatabase.End_MySQL_Connection();
 
-	if (needInit)
-		MySQL::Thread_End();
+    if (needInit)
+        MySQL::Thread_End();
 }
