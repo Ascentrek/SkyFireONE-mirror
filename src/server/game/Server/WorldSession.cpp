@@ -247,7 +247,7 @@ bool WorldSession::Update(PacketFilter& updater)
                     }
                     else
                     {
-                        // not expected _player or must checked in packet hanlder
+                        // not expected _player or must checked in packet handler
                         sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet));
                         (this->*opHandle.handler)(*packet);
                         if (sLog->IsOutDebug() && packet->rpos() < packet->wpos())
@@ -320,6 +320,9 @@ bool WorldSession::Update(PacketFilter& updater)
     //logout procedure should happen only in World::UpdateSessions() method!!!
     if (updater.ProcessLogout())
     {
+
+        ProcessQueryCallbacks();
+            
         //- If necessary, log the player out
         time_t currTime = time(NULL);
         if (!m_Socket || (ShouldLogOut(currTime) && !m_playerLoading))
@@ -644,3 +647,63 @@ void WorldSession::ExecuteOpcode(OpcodeHandler const& opHandle, WorldPacket* pac
     if (packet->rpos() < packet->wpos())
         LogUnprocessedTail(packet);
 }
+        
+void WorldSession::ProcessQueryCallbacks()
+{       
+    QueryResult_AutoPtr result;     
+        
+    //! HandleNameQueryOpcode       
+    while (!m_nameQueryCallbacks.is_empty())        
+    {       
+        QueryResultFuture lResult;      
+        ACE_Time_Value timeout = ACE_Time_Value::zero;      
+        if (m_nameQueryCallbacks.next_readable(lResult, &timeout) != 1)     
+           break;        
+        
+        lResult.get(result);        
+        SendNameQueryOpcodeFromDBCallBack(result);      
+    }       
+            
+    //! HandleCharEnumOpcode        
+    if (m_charEnumCallback.ready())     
+    {       
+        m_charEnumCallback.get(result);     
+        HandleCharEnum(result);     
+        m_charEnumCallback.cancel();        
+    }       
+        
+    //! HandlePlayerLoginOpcode     
+    if (m_charLoginCallback.ready())        
+    {       
+        SQLQueryHolder* param;      
+        m_charLoginCallback.get(param);     
+        HandlePlayerLogin((LoginQueryHolder*)param);        
+        m_charLoginCallback.cancel();       
+    }       
+        
+    //! HandleAddFriendOpcode       
+    if (m_addFriendCallback.IsReady())      
+    {       
+        const std::string& param = m_addFriendCallback.GetParam();        
+        m_addFriendCallback.GetResult(result);      
+        HandleAddFriendOpcodeCallBack(result, param);       
+        m_addFriendCallback.FreeResult();       
+    }       
+        
+    //- HandleCharRenameOpcode      
+    if (m_charRenameCallback.IsReady())     
+    {       
+        const std::string& param = m_charRenameCallback.GetParam();       
+        m_charRenameCallback.GetResult(result);     
+        HandleChangePlayerNameOpcodeCallBack(result, param);        
+        m_charRenameCallback.FreeResult();      
+    }       
+            
+    //- HandleCharAddIgnoreOpcode       
+    if (m_addIgnoreCallback.ready())        
+    {       
+        m_addIgnoreCallback.get(result);        
+        HandleAddIgnoreOpcodeCallBack(result);      
+        m_addIgnoreCallback.cancel();       
+    }       
+} 

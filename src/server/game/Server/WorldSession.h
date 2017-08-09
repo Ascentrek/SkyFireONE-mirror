@@ -167,7 +167,7 @@ class WorldSession
         //void SendTestCreatureQueryOpcode(uint32 entry, uint64 guid, uint32 testvalue);
         void SendNameQueryOpcode(Player* p);
         void SendNameQueryOpcodeFromDB(uint64 guid);
-        static void SendNameQueryOpcodeFromDBCallBack(QueryResult_AutoPtr result, uint32 accountId);
+        void SendNameQueryOpcodeFromDBCallBack(QueryResult_AutoPtr result);
 
         void SendTrainerList(uint64 guid);
         void SendTrainerList(uint64 guid, const std::string& strTitle);
@@ -342,10 +342,10 @@ class WorldSession
         void HandleEmoteOpcode(WorldPacket& recvPacket);
         void HandleContactListOpcode(WorldPacket& recvPacket);
         void HandleAddFriendOpcode(WorldPacket& recvPacket);
-        static void HandleAddFriendOpcodeCallBack(QueryResult_AutoPtr result, uint32 accountId, std::string friendNote);
+        void HandleAddFriendOpcodeCallBack(QueryResult_AutoPtr result, std::string friendNote);
         void HandleDelFriendOpcode(WorldPacket& recvPacket);
         void HandleAddIgnoreOpcode(WorldPacket& recvPacket);
-        static void HandleAddIgnoreOpcodeCallBack(QueryResult_AutoPtr result, uint32 accountId);
+        void HandleAddIgnoreOpcodeCallBack(QueryResult_AutoPtr result);
         void HandleDelIgnoreOpcode(WorldPacket& recvPacket);
         void HandleSetContactNotesOpcode(WorldPacket& recvPacket);
         void HandleBugOpcode(WorldPacket& recvPacket);
@@ -607,7 +607,7 @@ class WorldSession
         void HandleSetActionBarTogglesOpcode(WorldPacket& recv_data);
 
         void HandleChangePlayerNameOpcode(WorldPacket& recv_data);
-        static void HandleChangePlayerNameOpcodeCallBack(QueryResult_AutoPtr result, uint32 accountId, std::string newname);
+        void HandleChangePlayerNameOpcodeCallBack(QueryResult_AutoPtr result, std::string newname);
         void HandleSetPlayerDeclinedNamesOpcode(WorldPacket& recv_data);
 
         void HandleTotemDestroyed(WorldPacket& recv_data);
@@ -687,6 +687,17 @@ class WorldSession
         void HandleGuildBankBuyTab(WorldPacket& recv_data);
         void HandleGuildBankTabText(WorldPacket& recv_data);
         void HandleGuildBankSetTabText(WorldPacket& recv_data);
+        
+    private:        
+        void ProcessQueryCallbacks();
+                
+        ACE_Future_Set<QueryResult_AutoPtr> m_nameQueryCallbacks;          
+        QueryResultFuture m_charEnumCallback;       
+        QueryResultFuture m_addIgnoreCallback;      
+        QueryCallback<std::string> m_charRenameCallback;        
+        QueryCallback<std::string> m_addFriendCallback;     
+        QueryResultHolderFuture m_charLoginCallback;
+                
     private:
         // private trade methods
         void moveItems(Item* myItems[], Item* hisItems[]);

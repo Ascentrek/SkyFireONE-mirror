@@ -51,7 +51,7 @@ bool DatabaseWorkerPool::Open(const std::string& infoString, uint8 num_threads)
         m_async_connections[i] = new MySQLConnection(m_queue);
         m_async_connections[i]->Open(infoString);
         ++m_connections;
-		sLog->outDebug(LOG_FILTER_NETWORKIO, "Async database thread pool opened. Worker thread count: %u", num_threads);
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "Async database thread pool opened. Worker thread count: %u", num_threads);
     }
 
     m_infoString = infoString;
@@ -62,12 +62,19 @@ void DatabaseWorkerPool::Close()
 {
     /// Shuts down worker threads for this connection pool.
     for (uint8 i = 0; i < m_async_connections.size(); i++)
-        Enqueue(NULL);
+    {       
+        Enqueue(new DatabaseWorkerPoolEnd());       
+    }
+    
+    m_queue->queue()->deactivate();
 
     //- MySQL::Thread_End() should be called manually from the aborting calling threads
 
     delete m_bundle_conn;
     m_bundle_conn = NULL;
+        
+    //- MySQL::Thread_End() should be called manually from the aborting calling threads     
+    ASSERT( m_sync_connections.empty() );   
 }
 
 /*! This function creates a new MySQL connection for every MapUpdate thread
@@ -83,7 +90,7 @@ void DatabaseWorkerPool::Init_MySQL_Connection()
         m_sync_connections[ACE_Based::Thread::current()] = conn;
     }
 
-	sLog->outDebug(LOG_FILTER_NETWORKIO, "Core thread with ID [" UI64FMTD"] initializing MySQL connection.",
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "Core thread with ID [" UI64FMTD"] initializing MySQL connection.",
         (uint64)ACE_Based::Thread::currentId());
 }
 
@@ -198,6 +205,31 @@ void DatabaseWorkerPool::CommitTransaction()
     }
 }
 
+ACE_Future<QueryResult_AutoPtr> DatabaseWorkerPool::AsyncQuery(const char* sql)        
+{       
+    QueryResultFuture res;       
+    BasicStatementTask* task = new BasicStatementTask(sql, res);       
+    Enqueue(task);        
+    return res;         //! Fool compiler, has no use yet
+}
+        
+ACE_Future<QueryResult_AutoPtr> DatabaseWorkerPool::AsyncPQuery(const char* sql, ...)     
+{       
+    va_list ap;     
+    char szQuery[MAX_QUERY_LEN];        
+    va_start(ap, sql);      
+    int res = vsnprintf(szQuery, MAX_QUERY_LEN, sql, ap);       
+    va_end(ap);         
+    return AsyncQuery(szQuery);     
+}       
+        
+QueryResultHolderFuture DatabaseWorkerPool::DelayQueryHolder(SQLQueryHolder* holder)        
+{       
+    QueryResultHolderFuture res;        
+    SQLQueryHolderTask* task = new SQLQueryHolderTask(holder, res);     
+    Enqueue(task);      
+    return res;     //! Fool compiler, has no use yet       
+}
 
 MySQLConnection* DatabaseWorkerPool::GetConnection()
 {

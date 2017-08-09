@@ -21,7 +21,6 @@
 #include "Common.h"
 #include "Language.h"
 #include "DatabaseEnv.h"
-#include "AsyncDatabaseImpl.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "Opcodes.h"
@@ -60,29 +59,31 @@ void WorldSession::SendNameQueryOpcode(Player *p)
 
 void WorldSession::SendNameQueryOpcodeFromDB(uint64 guid)
 {
-    CharacterDatabase.AsyncPQuery(&WorldSession::SendNameQueryOpcodeFromDBCallBack, GetAccountId(),
-        !sWorld->getConfig(CONFIG_DECLINED_NAMES_USED) ?
-    //   ------- Query Without Declined Names --------
-    //          0                1     2
-        "SELECT guid, name, SUBSTRING(data, LENGTH(SUBSTRING_INDEX(data, ' ', '%u'))+2, LENGTH(SUBSTRING_INDEX(data, ' ', '%u')) - LENGTH(SUBSTRING_INDEX(data, ' ', '%u'))-1) "
-        "FROM characters WHERE guid = '%u'"
-        :
-    //   --------- Query With Declined Names ---------
-    //          0                1     2
-        "SELECT characters.guid, name, SUBSTRING(data, LENGTH(SUBSTRING_INDEX(data, ' ', '%u'))+2, LENGTH(SUBSTRING_INDEX(data, ' ', '%u')) - LENGTH(SUBSTRING_INDEX(data, ' ', '%u'))-1), "
-    //   3         4       5           6             7
-        "genitive, dative, accusative, instrumental, prepositional "
-        "FROM characters LEFT JOIN character_declinedname ON characters.guid = character_declinedname.guid WHERE characters.guid = '%u'",
-        UNIT_FIELD_BYTES_0, UNIT_FIELD_BYTES_0+1, UNIT_FIELD_BYTES_0, GUID_LOPART(guid));
+    ACE_Future<QueryResult_AutoPtr> lFutureResult =        
+        CharacterDatabase.AsyncPQuery(      
+            !sWorld->getConfig(CONFIG_DECLINED_NAMES_USED) ?     
+        //   ------- Query Without Declined Names --------      
+        //          0     1     2     3       4
+            "SELECT guid, name, race, gender, class "       
+            "FROM characters WHERE guid = '%u'"     
+            :       
+        //   --------- Query With Declined Names ---------      
+        //          0                1     2     3       4      
+            "SELECT characters.guid, name, race, gender, class, "       
+        //   5         6       7           8             9      
+            "genitive, dative, accusative, instrumental, prepositional "        
+            "FROM characters LEFT JOIN character_declinedname ON characters.guid = character_declinedname.guid WHERE characters.guid = '%u'",       
+            GUID_LOPART(guid)     
+        );      
+        
+    m_nameQueryCallbacks.insert(lFutureResult);
+        
+    // CharacterDatabase.AsyncPQuery(&WorldSession::SendNameQueryOpcodeFromDBCallBack, GetAccountId(),
 }
-
-void WorldSession::SendNameQueryOpcodeFromDBCallBack(QueryResult_AutoPtr result, uint32 accountId)
+    
+void WorldSession::SendNameQueryOpcodeFromDBCallBack(QueryResult_AutoPtr result)
 {
     if (!result)
-        return;
-
-    WorldSession * session = sWorld->FindSession(accountId);
-    if (!session)
         return;
 
     Field *fields = result->Fetch();
@@ -90,7 +91,7 @@ void WorldSession::SendNameQueryOpcodeFromDBCallBack(QueryResult_AutoPtr result,
     std::string name = fields[1].GetCppString();
     uint32 field     = 0;
     if (name == "")
-        name         = session->GetSkyFireString(LANG_NON_EXIST_CHARACTER);
+        name         = GetSkyFireString(LANG_NON_EXIST_CHARACTER);
     else
         field        = fields[2].GetUInt32();
 
@@ -113,7 +114,7 @@ void WorldSession::SendNameQueryOpcodeFromDBCallBack(QueryResult_AutoPtr result,
     else
         data << uint8(0);                                   // is not declined
 
-    session->SendPacket(&data);
+    SendPacket(&data);
 }
 
 void WorldSession::HandleNameQueryOpcode(WorldPacket& recv_data)

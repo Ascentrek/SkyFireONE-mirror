@@ -39,16 +39,16 @@ int DatabaseWorker::svc()
     while (1)
     {
         request = (SQLOperation*)(m_queue->dequeue());
-        if (!request)
+        request->SetConnection(m_conn);
+        
+        if (request->call() == -1)
             break;
 
-        request->SetConnection(m_conn);
-        request->call();
         delete request;
     }
 
+    delete request; 
     delete m_conn;
-    delete this;
     return 0;
 }
 
