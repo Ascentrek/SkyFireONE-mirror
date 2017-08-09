@@ -22,9 +22,12 @@
 #include "Util.h"
 #include "Timer.h"
 #include "Log.h"
+#include "DatabaseEnv.h"
 
 MySQLConnection::MySQLConnection() :
-m_Mysql(NULL)
+m_Mysql(NULL),      
+m_worker(NULL),     
+m_queue(NULL)
 {
 }
 
@@ -37,6 +40,8 @@ m_Mysql(NULL)
 
 MySQLConnection::~MySQLConnection()
 {
+    MySQL::Thread_End();
+    mysql_close(m_Mysql);   
 }
 
 bool MySQLConnection::Open(const std::string& infoString)
