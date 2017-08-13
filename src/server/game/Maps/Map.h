@@ -334,6 +334,7 @@ class Map : public GridRefManager<NGridType>
 
         static uint32 GetAreaId(uint16 areaflag, uint32 map_id);
         static uint32 GetZoneId(uint16 areaflag, uint32 map_id);
+		static void GetZoneAndAreaIdByAreaFlag(uint32& zoneid, uint32& areaid, uint16 areaflag, uint32 map_id);
 
         uint32 GetAreaId(float x, float y, float z) const
         {
@@ -344,6 +345,11 @@ class Map : public GridRefManager<NGridType>
         {
             return GetZoneId(GetAreaFlag(x, y, z), GetId());
         }
+
+		void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, float x, float y, float z) const
+		{
+			GetZoneAndAreaIdByAreaFlag(zoneid, areaid, GetAreaFlag(x, y, z), GetId());
+		}
 
         void MoveAllCreaturesInMoveList();
         void RemoveAllObjectsInRemoveList();

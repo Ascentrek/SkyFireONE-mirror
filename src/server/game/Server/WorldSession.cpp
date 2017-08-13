@@ -684,7 +684,7 @@ void WorldSession::ProcessQueryCallbacks()
     //! HandleAddFriendOpcode       
     if (m_addFriendCallback.IsReady())      
     {       
-        const std::string& param = m_addFriendCallback.GetParam();        
+        std::string param = m_addFriendCallback.GetParam();        
         m_addFriendCallback.GetResult(result);      
         HandleAddFriendOpcodeCallBack(result, param);       
         m_addFriendCallback.FreeResult();       
@@ -693,7 +693,7 @@ void WorldSession::ProcessQueryCallbacks()
     //- HandleCharRenameOpcode      
     if (m_charRenameCallback.IsReady())     
     {       
-        const std::string& param = m_charRenameCallback.GetParam();       
+        std::string param = m_charRenameCallback.GetParam();       
         m_charRenameCallback.GetResult(result);     
         HandleChangePlayerNameOpcodeCallBack(result, param);        
         m_charRenameCallback.FreeResult();      

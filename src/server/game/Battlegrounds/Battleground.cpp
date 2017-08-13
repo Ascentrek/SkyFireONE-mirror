@@ -962,8 +962,10 @@ void Battleground::SendRewardMarkByMail(Player *plr, uint32 mark, uint32 count)
 
     if (Item* markItem = Item::CreateItem(mark, count, plr))
     {
+		Mail *m = new Mail;
+		SQLTransaction trans = CharacterDatabase.BeginTransaction();
         // save new item before send
-        markItem->SaveToDB();                               // save for prevent lost at next mail load, if send fail then item will deleted
+        markItem->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
 
         // subject: item name
         std::string subject = markProto->Name1;
@@ -979,9 +981,12 @@ void Battleground::SendRewardMarkByMail(Player *plr, uint32 mark, uint32 count)
         snprintf(textBuf, 300, textFormat.c_str(), GetName(), GetName());
         uint32 itemTextId = sObjectMgr->CreateItemText(textBuf);
 
-        MailDraft(subject, itemTextId)
+        //MailDraft(subject, itemTextId)
+		MailDraft(m->subject, "")
             .AddItem(markItem)
-            .SendMailTo(plr, MailSender(MAIL_CREATURE, bmEntry));
+            .SendMailTo(trans, plr, MailSender(MAIL_CREATURE, bmEntry));
+		
+		CharacterDatabase.CommitTransaction(trans);
     }
 }
 

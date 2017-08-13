@@ -28,6 +28,7 @@
 #include "QueryResult.h"
 #include "DatabaseWorkerPool.h"
 #include "MySQLThreading.h"
+#include "Transaction.h"
 
 typedef DatabaseWorkerPool DatabaseType;
 

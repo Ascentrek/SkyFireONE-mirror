@@ -34,6 +34,16 @@ enum SpellEffIndex
 // used in script definitions
 #define EFFECT_FIRST_FOUND 254
 #define EFFECT_ALL 255
+
+enum LootModes
+{
+	LOOT_MODE_DEFAULT = 1,
+	LOOT_MODE_HARD_MODE_1 = 2,
+	LOOT_MODE_HARD_MODE_2 = 4,
+	LOOT_MODE_HARD_MODE_3 = 8,
+	LOOT_MODE_HARD_MODE_4 = 16
+};
+
 enum Gender
 {
     GENDER_MALE                        = 0,

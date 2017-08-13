@@ -610,6 +610,7 @@ class WorldObject : public Object, public WorldLocation
 
         uint32 GetZoneId() const;
         uint32 GetAreaId() const;
+		void GetZoneAndAreaId(uint32& zoneid, uint32& areaid) const;
 
         InstanceScript* GetInstanceScript();
 

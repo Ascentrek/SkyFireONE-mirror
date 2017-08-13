@@ -61,20 +61,6 @@ private:
     QueryResultFuture m_result; 
 };
 
-/*! Transactions */
-class TransactionTask : public SQLOperation
-{
-public:
-    TransactionTask();
-    ~TransactionTask();
-    void ForcefulDelete();
-
-    bool Execute();
-
-private:
-    std::queue<char*> m_queries;
-};
-
 class SQLQueryHolder
 {
     friend class SQLQueryHolderTask;
@@ -101,7 +87,7 @@ private:
 public:
     SQLQueryHolderTask(SQLQueryHolder *holder, QueryResultHolderFuture res) : m_holder(holder), m_result(res){};
     bool Execute();
-	
+    
 };
 
 #endif

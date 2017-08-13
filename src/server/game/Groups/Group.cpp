@@ -103,22 +103,26 @@ bool Group::Create(const uint64 &guid, const char * name)
 
         Player::ConvertInstancesToGroup(leader, this, guid);
 
+        if (!AddMember(guid, name))     
+            return false;
+
         // store group in database
-        CharacterDatabase.BeginTransaction();
-        CharacterDatabase.PExecute("DELETE FROM groups WHERE leaderGuid ='%u'", GUID_LOPART(m_leaderGuid));
-        CharacterDatabase.PExecute("DELETE FROM group_member WHERE leaderGuid ='%u'", GUID_LOPART(m_leaderGuid));
-        CharacterDatabase.PExecute("INSERT INTO groups(leaderGuid, mainTank, mainAssistant, lootMethod, looterGuid, lootThreshold, icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, isRaid, difficulty) "
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
+        trans->PAppend("DELETE FROM groups WHERE leaderGuid ='%u'", GUID_LOPART(m_leaderGuid));
+        trans->PAppend("DELETE FROM group_member WHERE leaderGuid ='%u'", GUID_LOPART(m_leaderGuid));
+        trans->PAppend("INSERT INTO groups(leaderGuid, mainTank, mainAssistant, lootMethod, looterGuid, lootThreshold, icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, isRaid, difficulty) "
             "VALUES('%u', '%u', '%u', '%u', '%u', '%u', '" UI64FMTD "', '" UI64FMTD "', '" UI64FMTD "', '" UI64FMTD "', '" UI64FMTD "', '" UI64FMTD "', '" UI64FMTD "', '" UI64FMTD "', '%u', '%u')",
             GUID_LOPART(m_leaderGuid), GUID_LOPART(m_mainTank), GUID_LOPART(m_mainAssistant), uint32(m_lootMethod),
             GUID_LOPART(m_looterGuid), uint32(m_lootThreshold), m_targetIcons[0], m_targetIcons[1], m_targetIcons[2], m_targetIcons[3], m_targetIcons[4], m_targetIcons[5], m_targetIcons[6], m_targetIcons[7], isRaidGroup(), m_difficulty);
+    
+        CharacterDatabase.CommitTransaction(trans);
     }
 
     if (!AddMember(guid, name))
         return false;
 
-    if (!isBGGroup()) CharacterDatabase.CommitTransaction();
-
-    return true;
+    if (!isBGGroup())
+        return true;
 }
 
 bool Group::LoadGroupFromDB(const uint64 &leaderGuid, QueryResult_AutoPtr result, bool loadMembers)
@@ -413,10 +417,10 @@ void Group::Disband(bool hideDestroy)
 
     if (!isBGGroup())
     {
-        CharacterDatabase.BeginTransaction();
-        CharacterDatabase.PExecute("DELETE FROM groups WHERE leaderGuid='%u'", GUID_LOPART(m_leaderGuid));
-        CharacterDatabase.PExecute("DELETE FROM group_member WHERE leaderGuid='%u'", GUID_LOPART(m_leaderGuid));
-        CharacterDatabase.CommitTransaction();
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
+        trans->PAppend("DELETE FROM groups WHERE leaderGuid='%u'", GUID_LOPART(m_leaderGuid));
+        trans->PAppend("DELETE FROM group_member WHERE leaderGuid='%u'", GUID_LOPART(m_leaderGuid));
+        CharacterDatabase.CommitTransaction(trans);
         ResetInstances(INSTANCE_RESET_GROUP_DISBAND, NULL);
     }
 
@@ -578,7 +582,7 @@ void Group::NeedBeforeGreed(const uint64& playerGUID, Loot *loot, WorldObject* o
     Group *group = player->GetGroup();
 
     uint8 itemSlot = 0;
-    for (std::vector<LootItem>::iterator i=loot->items.begin(); i != loot->items.end(); ++i, ++itemSlot)
+    for (std::vector<LootItem>::iterator i = loot->items.begin(); i != loot->items.end(); ++i, ++itemSlot)
     {
         item = sObjectMgr->GetItemPrototype(i->itemid);
 
@@ -586,7 +590,7 @@ void Group::NeedBeforeGreed(const uint64& playerGUID, Loot *loot, WorldObject* o
         if (item->Quality >= uint32(m_lootThreshold) && !i->freeforall)
         {
             uint64 newitemGUID = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), 0, HIGHGUID_ITEM);
-            Roll* r=new Roll(newitemGUID, *i);
+            Roll* r = new Roll(newitemGUID, *i);
 
             for (GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
             {
@@ -621,7 +625,7 @@ void Group::NeedBeforeGreed(const uint64& playerGUID, Loot *loot, WorldObject* o
             }
         }
         else
-            i->is_underthreshold=1;
+            i->is_underthreshold = 1;
     }
 }
 
@@ -1126,7 +1130,7 @@ void Group::_setLeader(const uint64 &guid)
     if (!isBGGroup())
     {
         // TODO: set a time limit to have this function run rarely cause it can be slow
-        CharacterDatabase.BeginTransaction();
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
         // update the group's bound instances when changing leaders
 
@@ -1158,7 +1162,7 @@ void Group::_setLeader(const uint64 &guid)
         }
 
         // update the group's solo binds to the new leader
-        CharacterDatabase.PExecute("UPDATE group_instance SET leaderGuid='%u' WHERE leaderGuid = '%u'", GUID_LOPART(slot->guid), GUID_LOPART(m_leaderGuid));
+        trans->PAppend("UPDATE group_instance SET leaderGuid='%u' WHERE leaderGuid = '%u'", GUID_LOPART(slot->guid), GUID_LOPART(m_leaderGuid));
 
         // copy the permanent binds from the new leader to the group
         // overwriting the solo binds with permanent ones if necessary
@@ -1166,9 +1170,9 @@ void Group::_setLeader(const uint64 &guid)
         Player::ConvertInstancesToGroup(player, this, slot->guid);
 
         // update the group leader
-        CharacterDatabase.PExecute("UPDATE groups SET leaderGuid='%u' WHERE leaderGuid='%u'", GUID_LOPART(slot->guid), GUID_LOPART(m_leaderGuid));
-        CharacterDatabase.PExecute("UPDATE group_member SET leaderGuid='%u' WHERE leaderGuid='%u'", GUID_LOPART(slot->guid), GUID_LOPART(m_leaderGuid));
-        CharacterDatabase.CommitTransaction();
+        trans->PAppend("UPDATE groups SET leaderGuid='%u' WHERE leaderGuid='%u'", GUID_LOPART(slot->guid), GUID_LOPART(m_leaderGuid));
+        trans->PAppend("UPDATE group_member SET leaderGuid='%u' WHERE leaderGuid='%u'", GUID_LOPART(slot->guid), GUID_LOPART(m_leaderGuid));
+        CharacterDatabase.CommitTransaction(trans);
     }
 
     m_leaderGuid = slot->guid;

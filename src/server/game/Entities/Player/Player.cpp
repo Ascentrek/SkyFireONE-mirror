@@ -3254,9 +3254,9 @@ void Player::_LoadSpellCooldowns(QueryResult_AutoPtr result)
     }
 }
 
-void Player::_SaveSpellCooldowns()
+void Player::_SaveSpellCooldowns(SQLTransaction& trans)
 {
-    CharacterDatabase.PExecute("DELETE FROM character_spell_cooldown WHERE guid = '%u'", GetGUIDLow());
+    trans->PAppend("DELETE FROM character_spell_cooldown WHERE guid = '%u'", GetGUIDLow());
 
     time_t curTime = time(NULL);
 
@@ -3267,7 +3267,7 @@ void Player::_SaveSpellCooldowns()
             m_spellCooldowns.erase(itr++);
         else
         {
-            CharacterDatabase.PExecute("INSERT INTO character_spell_cooldown (guid, spell, item, time) VALUES ('%u', '%u', '%u', '" UI64FMTD "')", GetGUIDLow(), itr->first, itr->second.itemid, uint64(itr->second.end));
+            trans->PAppend("INSERT INTO character_spell_cooldown (guid, spell, item, time) VALUES ('%u', '%u', '%u', '" UI64FMTD "')", GetGUIDLow(), itr->first, itr->second.itemid, uint64(itr->second.end));
             ++itr;
         }
     }
@@ -3745,6 +3745,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
         // completely remove from the database
         case CHAR_DELETE_REMOVE:
         {
+            SQLTransaction trans = CharacterDatabase.BeginTransaction();
             // return back all mails with COD and Item                        0  1           2              3      4       5          6     7
             QueryResult_AutoPtr resultMail = CharacterDatabase.PQuery("SELECT id, messageType, mailTemplateId, sender, subject, itemTextId, money, has_items FROM mail WHERE receiver='%u' AND has_items<>0 AND cod<>0", guid);
             if (resultMail)
@@ -3764,17 +3765,17 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
 
                     // we can return mail now
                     // so firstly delete the old one
-                    CharacterDatabase.PExecute("DELETE FROM mail WHERE id = '%u'", mail_id);
+                    trans->PAppend("DELETE FROM mail WHERE id = '%u'", mail_id);
 
                     // mail not from player
                     if (mailType != MAIL_NORMAL)
                     {
                         if (has_items)
-                            CharacterDatabase.PExecute("DELETE FROM mail_items WHERE mail_id = '%u'", mail_id);
+                            trans->PAppend("DELETE FROM mail_items WHERE mail_id = '%u'", mail_id);
                         continue;
                     }
 
-                    MailDraft draft(subject, itemTextId);
+                    MailDraft draft(subject, "There's were problems with equipping item(s).");
                     if (mailTemplateId)
                         draft = MailDraft(mailTemplateId, false);   // items already included
 
@@ -3794,7 +3795,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
                                 ItemPrototype const* itemProto = ObjectMgr::GetItemPrototype(item_template);
                                 if (!itemProto)
                                 {
-                                    CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'", item_guidlow);
+                                    trans->PAppend("DELETE FROM item_instance WHERE guid = '%u'", item_guidlow);
                                     continue;
                                 }
 
@@ -3802,7 +3803,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
                                 if (!pItem->LoadFromDB(item_guidlow, MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER), resultItems))
                                 {
                                     pItem->FSetState(ITEM_REMOVED);
-                                    pItem->SaveToDB();              // it also deletes item object !
+                                    pItem->SaveToDB(trans);              // it also deletes item object !
                                     continue;
                                 }
 
@@ -3812,7 +3813,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
                         }
                     }
 
-                    CharacterDatabase.PExecute("DELETE FROM mail_items WHERE mail_id = '%u'", mail_id);
+                    trans->PAppend("DELETE FROM mail_items WHERE mail_id = '%u'", mail_id);
 
                     uint32 pl_account = sObjectMgr->GetPlayerAccountIdByGUID(MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
 
@@ -3826,7 +3827,6 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             QueryResult_AutoPtr resultPets = CharacterDatabase.PQuery("SELECT id FROM character_pet WHERE owner = '%u'", guid);
 
             // NOW we can finally clear other DB data related to character
-            CharacterDatabase.BeginTransaction();
             if (resultPets)
             {
                 do
@@ -3837,32 +3837,32 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
                 } while (resultPets->NextRow());
             }
 
-            CharacterDatabase.PExecute("DELETE FROM characters WHERE guid = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM character_declinedname WHERE guid = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM character_action WHERE guid = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM character_aura WHERE guid = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE guid = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM character_homebind WHERE guid = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM group_instance WHERE leaderGuid = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE guid = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM character_queststatus WHERE guid = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM character_queststatus_daily WHERE guid = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM character_reputation WHERE guid = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM character_skills WHERE guid = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM character_spell_cooldown WHERE guid = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM gm_tickets WHERE playerGuid = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM item_instance WHERE owner_guid = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM character_social WHERE guid = '%u' OR friend='%u'", guid, guid);
-            CharacterDatabase.PExecute("DELETE FROM mail WHERE receiver = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM mail_items WHERE receiver = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM character_pet WHERE owner = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM character_pet_declinedname WHERE owner = '%u'", guid);
-            CharacterDatabase.PExecute("DELETE FROM guild_eventlog WHERE PlayerGuid1 = '%u' OR PlayerGuid2 = '%u'", guid, guid);
-            CharacterDatabase.PExecute("DELETE FROM guild_bank_eventlog WHERE PlayerGuid = '%u'", guid);
+            trans->PAppend("DELETE FROM characters WHERE guid = '%u'", guid);
+            trans->PAppend("DELETE FROM character_declinedname WHERE guid = '%u'", guid);
+            trans->PAppend("DELETE FROM character_action WHERE guid = '%u'", guid);
+            trans->PAppend("DELETE FROM character_aura WHERE guid = '%u'", guid);
+            trans->PAppend("DELETE FROM character_gifts WHERE guid = '%u'", guid);
+            trans->PAppend("DELETE FROM character_homebind WHERE guid = '%u'", guid);
+            trans->PAppend("DELETE FROM character_instance WHERE guid = '%u'", guid);
+            trans->PAppend("DELETE FROM group_instance WHERE leaderGuid = '%u'", guid);
+            trans->PAppend("DELETE FROM character_inventory WHERE guid = '%u'", guid);
+            trans->PAppend("DELETE FROM character_queststatus WHERE guid = '%u'", guid);
+            trans->PAppend("DELETE FROM character_queststatus_daily WHERE guid = '%u'", guid);
+            trans->PAppend("DELETE FROM character_reputation WHERE guid = '%u'", guid);
+            trans->PAppend("DELETE FROM character_skills WHERE guid = '%u'", guid);
+            trans->PAppend("DELETE FROM character_spell WHERE guid = '%u'", guid);
+            trans->PAppend("DELETE FROM character_spell_cooldown WHERE guid = '%u'", guid);
+            trans->PAppend("DELETE FROM gm_tickets WHERE playerGuid = '%u'", guid);
+            trans->PAppend("DELETE FROM item_instance WHERE owner_guid = '%u'", guid);
+            trans->PAppend("DELETE FROM character_social WHERE guid = '%u' OR friend='%u'", guid, guid);
+            trans->PAppend("DELETE FROM mail WHERE receiver = '%u'", guid);
+            trans->PAppend("DELETE FROM mail_items WHERE receiver = '%u'", guid);
+            trans->PAppend("DELETE FROM character_pet WHERE owner = '%u'", guid);
+            trans->PAppend("DELETE FROM character_pet_declinedname WHERE owner = '%u'", guid);
+            trans->PAppend("DELETE FROM guild_eventlog WHERE PlayerGuid1 = '%u' OR PlayerGuid2 = '%u'", guid, guid);
+            trans->PAppend("DELETE FROM guild_bank_eventlog WHERE PlayerGuid = '%u'", guid);
 
-            CharacterDatabase.CommitTransaction();
+            CharacterDatabase.CommitTransaction(trans);
             break;
         }
         // The character gets unlinked from the account, the name gets freed up and appears as deleted ingame
@@ -4364,7 +4364,11 @@ uint32 Player::DurabilityRepair(uint16 pos, bool cost, float discountMod, bool g
                     return TotalCost;
                 }
 
-                pGuild->MemberMoneyWithdraw(costs, GetGUIDLow());
+                //- TODO: Fix bad function call design      
+                SQLTransaction trans = CharacterDatabase.BeginTransaction();        
+                pGuild->MemberMoneyWithdraw(costs, GetGUIDLow(), trans);        
+                CharacterDatabase.CommitTransaction(trans);
+
                 TotalCost = costs;
             }
             else if (GetMoney() < costs)
@@ -7174,17 +7178,13 @@ void Player::SendLootRelease(uint64 guid)
 
 void Player::SendLoot(uint64 guid, LootType loot_type)
 {
-     if (uint64 lguid = GetLootGUID())
-         m_session->DoLootRelease(lguid);
+    if (uint64 lguid = GetLootGUID())
+        m_session->DoLootRelease(lguid);
 
-    Loot    *loot = 0;
+    Loot *loot = 0;
     PermissionTypes permission = ALL_PERMISSION;
 
-    // release old loot
-    if (uint64 lguid = GetLootGUID())
-        GetSession()->DoLootRelease(lguid);
-
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "Player::SendLoot");
+    sLog->outDebug(LOG_FILTER_LOOT, "Player::SendLoot");
     if (IS_GAMEOBJECT_GUID(guid))
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "       IS_GAMEOBJECT_GUID(guid)");
@@ -7218,7 +7218,14 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             {
                 sLog->outDebug(LOG_FILTER_NETWORKIO, "       if (lootid)");
                 loot->clear();
-                loot->FillLoot(lootid, LootTemplates_Gameobject, this);
+
+                Group* group = GetGroup();
+                bool groupRules = (group && go->GetGOInfo()->type == GAMEOBJECT_TYPE_CHEST && go->GetGOInfo()->chest.groupLootRules);
+
+                // check current RR player and get next if necessary
+                if (groupRules)
+                    group->UpdateLooterGuid(go, true);
+                loot->FillLoot(lootid, LootTemplates_Gameobject, this, !groupRules, false, go->GetLootMode());
 
                 //if chest apply 2.1.x rules
                 if ((go->GetGoType() == GAMEOBJECT_TYPE_CHEST)&&(go->GetGOInfo()->chest.groupLootRules))
@@ -7247,7 +7254,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             }
 
             if (loot_type == LOOT_FISHING)
-                go->getFishLoot(loot);
+                go->getFishLoot(loot, this);
 
             go->SetLootState(GO_ACTIVATED);
         }
@@ -7270,7 +7277,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             {
                 item->m_lootGenerated = true;
                 loot->clear();
-                loot->FillLoot(item->GetProto()->DisenchantID, LootTemplates_Disenchant, this);
+                loot->FillLoot(item->GetProto()->DisenchantID, LootTemplates_Disenchant, this, true);
             }
         }
         else if (loot_type == LOOT_PROSPECTING)
@@ -7281,7 +7288,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             {
                 item->m_lootGenerated = true;
                 loot->clear();
-                loot->FillLoot(item->GetEntry(), LootTemplates_Prospecting, this);
+                loot->FillLoot(item->GetEntry(), LootTemplates_Prospecting, this, true);
             }
         }
         else
@@ -7292,8 +7299,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             {
                 item->m_lootGenerated = true;
                 loot->clear();
-                loot->FillLoot(item->GetEntry(), LootTemplates_Item, this);
-
+                loot->FillLoot(item->GetEntry(), LootTemplates_Item, this, this);
                 loot->generateMoneyLoot(item->GetProto()->MinMoneyLoot, item->GetProto()->MaxMoneyLoot);
             }
         }
@@ -7317,7 +7323,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             bones->loot.clear();
             if (Battleground *bg = GetBattleground())
                 if (bg->GetTypeID() == BATTLEGROUND_AV)
-                    loot->FillLoot(1, LootTemplates_Creature, this);
+                    loot->FillLoot(1, LootTemplates_Creature, this, this);
             // It may need a better formula
             // Now it works like this: lvl10: ~6copper, lvl70: ~9silver
             bones->loot.gold = (uint32)(urand(50, 150) * 0.016f * pow(((float)pLevel)/5.76f, 2.5f) * sWorld->getRate(RATE_DROP_MONEY));
@@ -7353,7 +7359,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                 loot->clear();
 
                 if (uint32 lootid = creature->GetCreatureTemplate()->pickpocketLootId)
-                    loot->FillLoot(lootid, LootTemplates_Pickpocketing, this);
+                    loot->FillLoot(lootid, LootTemplates_Pickpocketing, this, this);
 
                 // Generate extra money for pick pocket loot
                 const uint32 a = urand(0, creature->getLevel()/2);
@@ -7366,26 +7372,13 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             // the player whose group may loot the corpse
             Player *recipient = creature->GetLootRecipient();
             if (!recipient)
-            {
-                creature->SetLootRecipient(this);
-                recipient = this;
-            }
-
-            if (creature->lootForPickPocketed)
-            {
-                creature->lootForPickPocketed = false;
-                loot->clear();
-            }
+                return;
 
             if (!creature->lootForBody)
             {
                 creature->lootForBody = true;
-                loot->clear();
 
-                if (uint32 lootid = creature->GetCreatureTemplate()->lootid)
-                    loot->FillLoot(lootid, LootTemplates_Creature, recipient);
-
-                loot->generateMoneyLoot(creature->GetCreatureTemplate()->mingold, creature->GetCreatureTemplate()->maxgold);
+                // for creature, loot is filled when creature is killed.
 
                 if (Group* group = recipient->GetGroup())
                 {
@@ -7393,18 +7386,18 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
 
                     switch (group->GetLootMethod())
                     {
-                        case GROUP_LOOT:
-                            // GroupLoot delete items over threshold (threshold even not implemented), and roll them. Items with quality<threshold, round robin
-                            group->GroupLoot(recipient->GetGUID(), loot, creature);
-                            break;
-                        case NEED_BEFORE_GREED:
-                            group->NeedBeforeGreed(recipient->GetGUID(), loot, creature);
-                            break;
-                        case MASTER_LOOT:
-                            group->MasterLoot(recipient->GetGUID(), loot, creature);
-                            break;
-                        default:
-                            break;
+                    case GROUP_LOOT:
+                        // GroupLoot delete items over threshold (threshold even not implemented), and roll them. Items with quality<threshold, round robin
+                        group->GroupLoot(recipient->GetGUID(), loot, creature);
+                        break;
+                    case NEED_BEFORE_GREED:
+                        group->NeedBeforeGreed(recipient->GetGUID(), loot, creature);
+                        break;
+                    case MASTER_LOOT:
+                        group->MasterLoot(recipient->GetGUID(), loot, creature);
+                        break;
+                    default:
+                        break;
                     }
                 }
             }
@@ -7413,7 +7406,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             if (loot_type == LOOT_SKINNING)
             {
                 loot->clear();
-                loot->FillLoot(creature->GetCreatureTemplate()->SkinLootId, LootTemplates_Skinning, this);
+                loot->FillLoot(creature->GetCreatureTemplate()->SkinLootId, LootTemplates_Skinning, this, true);
             }
             // set group rights only for loot_type != LOOT_SKINNING
             else
@@ -12920,7 +12913,12 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
 
     // Send reward mail
     if (uint32 mail_template_id = pQuest->GetRewMailTemplateId())
-        MailDraft(mail_template_id).SendMailTo(this, questGiver, MAIL_CHECK_MASK_HAS_BODY, pQuest->GetRewMailDelaySecs());
+    {       
+        //- TODO: Poor design of mail system        
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();        
+        MailDraft(mail_template_id).SendMailTo(trans, this, questGiver, MAIL_CHECK_MASK_HAS_BODY, pQuest->GetRewMailDelaySecs());       
+        CharacterDatabase.CommitTransaction(trans);     
+    }
 
     if (pQuest->IsDaily())
         SetDailyQuestStatus(quest_id);
@@ -14919,6 +14917,7 @@ void Player::_LoadInventory(QueryResult_AutoPtr result, uint32 timediff)
     if (result)
     {
         std::list<Item*> problematicItems;
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
         // prevent items from being added to the queue when stored
         m_itemUpdateQueueBlocked = true;
@@ -14934,8 +14933,8 @@ void Player::_LoadInventory(QueryResult_AutoPtr result, uint32 timediff)
 
             if (!proto)
             {
-                CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
-                CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'", item_guid);
+                trans->PAppend("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
+                trans->PAppend("DELETE FROM item_instance WHERE guid = '%u'", item_guid);
                 sLog->outError("Player::_LoadInventory: Player %s has an unknown item (id: #%u) in inventory, deleted.", GetName(), item_id);
                 continue;
             }
@@ -14947,7 +14946,7 @@ void Player::_LoadInventory(QueryResult_AutoPtr result, uint32 timediff)
                 sLog->outError("Player::_LoadInventory: Player %s has broken item (id: #%u) in inventory, deleted.", GetName(), item_id);
                 CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
                 item->FSetState(ITEM_REMOVED);
-                item->SaveToDB();                           // it also deletes item object !
+                item->SaveToDB(trans);                           // it also deletes item object !
                 continue;
             }
 
@@ -14956,7 +14955,7 @@ void Player::_LoadInventory(QueryResult_AutoPtr result, uint32 timediff)
             {
                 CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
                 item->FSetState(ITEM_REMOVED);
-                item->SaveToDB();                           // it also deletes item object !
+                item->SaveToDB(trans);                           // it also deletes item object !
                 continue;
             }
 
@@ -14965,7 +14964,7 @@ void Player::_LoadInventory(QueryResult_AutoPtr result, uint32 timediff)
             {
                 CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
                 item->FSetState(ITEM_REMOVED);
-                item->SaveToDB();                           // it also deletes item object !
+                item->SaveToDB(trans);                           // it also deletes item object !
                 continue;
             }
 
@@ -15049,7 +15048,7 @@ void Player::_LoadInventory(QueryResult_AutoPtr result, uint32 timediff)
             std::string subject = GetSession()->GetSkyFireString(LANG_NOT_EQUIPPED_ITEM);
 
             // fill mail
-            MailDraft draft(subject);
+            MailDraft draft(subject, "There's were problems with equipping item(s).");
 
             for (int i = 0; !problematicItems.empty() && i < MAX_MAIL_ITEMS; ++i)
             {
@@ -15059,8 +15058,9 @@ void Player::_LoadInventory(QueryResult_AutoPtr result, uint32 timediff)
                 draft.AddItem(item);
             }
 
-            draft.SendMailTo(this, MailSender(this, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED);
+            draft.SendMailTo(trans, this, MailSender(this, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED);
         }
+        CharacterDatabase.CommitTransaction(trans);
     }
     //if (isAlive())
     _ApplyAllItemMods();
@@ -15072,7 +15072,9 @@ void Player::_LoadMailedItems(Mail *mail)
     QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT item_guid, item_template FROM mail_items WHERE mail_id='%u'", mail->messageID);
     if (!result)
         return;
-
+    
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    
     do
     {
         Field *fields = result->Fetch();
@@ -15086,8 +15088,8 @@ void Player::_LoadMailedItems(Mail *mail)
         if (!proto)
         {
             sLog->outError("Player %u has unknown item_template (ProtoType) in mailed items(GUID: %u template: %u) in mail (%u), deleted.", GetGUIDLow(), item_guid_low, item_template, mail->messageID);
-            CharacterDatabase.PExecute("DELETE FROM mail_items WHERE item_guid = '%u'", item_guid_low);
-            CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'", item_guid_low);
+            trans->PAppend("DELETE FROM mail_items WHERE item_guid = '%u'", item_guid_low);
+            trans->PAppend("DELETE FROM item_instance WHERE guid = '%u'", item_guid_low);
             continue;
         }
 
@@ -15098,12 +15100,13 @@ void Player::_LoadMailedItems(Mail *mail)
             sLog->outError("Player::_LoadMailedItems - Item in mail (%u) doesn't exist !!!! - item guid: %u, deleted from mail", mail->messageID, item_guid_low);
             CharacterDatabase.PExecute("DELETE FROM mail_items WHERE item_guid = '%u'", item_guid_low);
             item->FSetState(ITEM_REMOVED);
-            item->SaveToDB();                               // it also deletes item object !
+            item->SaveToDB(trans);                               // it also deletes item object !
             continue;
         }
 
         AddMItem(item);
     } while (result->NextRow());
+    CharacterDatabase.CommitTransaction(trans);
 }
 
 void Player::_LoadMailInit(QueryResult_AutoPtr resultUnread, QueryResult_AutoPtr resultDelivery)
@@ -15987,26 +15990,26 @@ void Player::SaveToDB()
     }
     ss << "')";
 
-    CharacterDatabase.BeginTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
-    CharacterDatabase.Execute(ss.str().c_str());
+    trans->Append(ss.str().c_str());
 
     if (m_mailsUpdated)                                     //save mails only when needed
-        _SaveMail();
+        _SaveMail(trans);
 
-    _SaveBGData();
-    _SaveInventory();
-    _SaveQuestStatus();
-    _SaveDailyQuestStatus();
-    _SaveTutorials();
-    _SaveSpells();
-    _SaveSpellCooldowns();
-    _SaveActions();
-    _SaveAuras();
-    _SaveSkills();
-    m_reputationMgr.SaveToDB();
+    _SaveBGData(trans);
+    _SaveInventory(trans);
+    _SaveQuestStatus(trans);
+    _SaveDailyQuestStatus(trans);
+    _SaveTutorials(trans);
+    _SaveSpells(trans);
+    _SaveSpellCooldowns(trans);
+    _SaveActions(trans);
+    _SaveAuras(trans);
+    _SaveSkills(trans);
+    m_reputationMgr.SaveToDB(trans);
 
-    CharacterDatabase.CommitTransaction();
+    CharacterDatabase.CommitTransaction(trans);
 
     // restore state (before aura apply, if aura remove flag then aura must set it ack by self)
     SetDisplayId(tmp_displayid);
@@ -16021,37 +16024,37 @@ void Player::SaveToDB()
 }
 
 // fast save function for item/money cheating preventing - save only inventory and money state
-void Player::SaveInventoryAndGoldToDB()
+void Player::SaveInventoryAndGoldToDB(SQLTransaction& trans)
 {
-    _SaveInventory();
-    SaveGoldToDB();
+    _SaveInventory(trans);
+    SaveGoldToDB(trans);
 }
 
-void Player::SaveGoldToDB()
+void Player::SaveGoldToDB(SQLTransaction& trans)
 {
-    CharacterDatabase.PExecute("UPDATE characters SET money = '%u' WHERE guid = '%u'", GetMoney(), GetGUIDLow());
+    trans->PAppend("UPDATE characters SET money = '%u' WHERE guid = '%u'", GetMoney(), GetGUIDLow());
 }
 
-void Player::_SaveActions()
+void Player::_SaveActions(SQLTransaction& trans)
 {
     for (ActionButtonList::iterator itr = m_actionButtons.begin(); itr != m_actionButtons.end();)
     {
         switch (itr->second.uState)
         {
             case ACTIONBUTTON_NEW:
-                CharacterDatabase.PExecute("INSERT INTO character_action (guid, button, action, type, misc) VALUES ('%u', '%u', '%u', '%u', '%u')",
+                trans->PAppend("INSERT INTO character_action (guid, button, action, type, misc) VALUES ('%u', '%u', '%u', '%u', '%u')",
                     GetGUIDLow(), (uint32)itr->first, (uint32)itr->second.action, (uint32)itr->second.type, (uint32)itr->second.misc);
                 itr->second.uState = ACTIONBUTTON_UNCHANGED;
                 ++itr;
                 break;
             case ACTIONBUTTON_CHANGED:
-                CharacterDatabase.PExecute("UPDATE character_action  SET action = '%u', type = '%u', misc= '%u' WHERE guid= '%u' AND button= '%u' ",
+                trans->PAppend("UPDATE character_action  SET action = '%u', type = '%u', misc= '%u' WHERE guid= '%u' AND button= '%u' ",
                     (uint32)itr->second.action, (uint32)itr->second.type, (uint32)itr->second.misc, GetGUIDLow(), (uint32)itr->first);
                 itr->second.uState = ACTIONBUTTON_UNCHANGED;
                 ++itr;
                 break;
             case ACTIONBUTTON_DELETED:
-                CharacterDatabase.PExecute("DELETE FROM character_action WHERE guid = '%u' and button = '%u'", GetGUIDLow(), (uint32)itr->first);
+                trans->PAppend("DELETE FROM character_action WHERE guid = '%u' and button = '%u'", GetGUIDLow(), (uint32)itr->first);
                 m_actionButtons.erase(itr++);
                 break;
             default:
@@ -16061,9 +16064,9 @@ void Player::_SaveActions()
     }
 }
 
-void Player::_SaveAuras()
+void Player::_SaveAuras(SQLTransaction& trans)
 {
-    CharacterDatabase.PExecute("DELETE FROM character_aura WHERE guid = '%u'", GetGUIDLow());
+    trans->PAppend("DELETE FROM character_aura WHERE guid = '%u'", GetGUIDLow());
 
     AuraMap const& auras = GetAuras();
 
@@ -16119,7 +16122,7 @@ void Player::_SaveAuras()
     }
 }
 
-void Player::_SaveInventory()
+void Player::_SaveInventory(SQLTransaction& trans)
 {
     // force items in buyback slots to new state
     // and remove those that aren't already
@@ -16128,8 +16131,8 @@ void Player::_SaveInventory()
         Item *item = m_items[i];
         if (!item || item->GetState() == ITEM_NEW)
             continue;
-        CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item->GetGUIDLow());
-        CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'", item->GetGUIDLow());
+        trans->PAppend("DELETE FROM character_inventory WHERE item = '%u'", item->GetGUIDLow());
+        trans->PAppend("DELETE FROM item_instance WHERE guid = '%u'", item->GetGUIDLow());
         m_items[i]->FSetState(ITEM_NEW);
     }
 
@@ -16173,7 +16176,7 @@ void Player::_SaveInventory()
                 sLog->outError("Player(GUID: %u Name: %s)::_SaveInventory - the bag(%u) and slot(%u) values for the item with guid %u are incorrect, the item with guid %u is there instead!", lowGuid, GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), test->GetGUIDLow());
                 // save all changes to the item...
                 if (item->GetState() != ITEM_NEW) // only for existing items, no dupes
-                    item->SaveToDB();
+                    item->SaveToDB(trans);
                 // ...but do not save position in invntory
                 continue;
             }
@@ -16182,24 +16185,24 @@ void Player::_SaveInventory()
         switch (item->GetState())
         {
             case ITEM_NEW:
-                CharacterDatabase.PExecute("INSERT INTO character_inventory (guid, bag, slot, item, item_template) VALUES ('%u', '%u', '%u', '%u', '%u')", lowGuid, bag_guid, item->GetSlot(), item->GetGUIDLow(), item->GetEntry());
+                trans->PAppend("INSERT INTO character_inventory (guid, bag, slot, item, item_template) VALUES ('%u', '%u', '%u', '%u', '%u')", lowGuid, bag_guid, item->GetSlot(), item->GetGUIDLow(), item->GetEntry());
                 break;
             case ITEM_CHANGED:
-                CharacterDatabase.PExecute("UPDATE character_inventory SET guid='%u', bag='%u', slot='%u', item_template='%u' WHERE item='%u'", lowGuid, bag_guid, item->GetSlot(), item->GetEntry(), item->GetGUIDLow());
+                trans->PAppend("UPDATE character_inventory SET guid='%u', bag='%u', slot='%u', item_template='%u' WHERE item='%u'", lowGuid, bag_guid, item->GetSlot(), item->GetEntry(), item->GetGUIDLow());
                 break;
             case ITEM_REMOVED:
-                CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item->GetGUIDLow());
+                trans->PAppend("DELETE FROM character_inventory WHERE item = '%u'", item->GetGUIDLow());
                 break;
             case ITEM_UNCHANGED:
                 break;
         }
 
-        item->SaveToDB();                                   // item have unchanged inventory record and can be save standalone
+        item->SaveToDB(trans);                                   // item have unchanged inventory record and can be save standalone
     }
     m_itemUpdateQueue.clear();
 }
 
-void Player::_SaveMail()
+void Player::_SaveMail(SQLTransaction& trans)
 {
     if (!m_mailsLoaded)
         return;
@@ -16209,12 +16212,12 @@ void Player::_SaveMail()
         Mail *m = (*itr);
         if (m->state == MAIL_STATE_CHANGED)
         {
-            CharacterDatabase.PExecute("UPDATE mail SET itemTextId = '%u', has_items = '%u', expire_time = '" UI64FMTD "', deliver_time = '" UI64FMTD "', money = '%u', cod = '%u', checked = '%u' WHERE id = '%u'",
+            trans->PAppend("UPDATE mail SET itemTextId = '%u', has_items = '%u', expire_time = '" UI64FMTD "', deliver_time = '" UI64FMTD "', money = '%u', cod = '%u', checked = '%u' WHERE id = '%u'",
                 m->itemTextId, m->HasItems() ? 1 : 0, (uint64)m->expire_time, (uint64)m->deliver_time, m->money, m->COD, m->checked, m->messageID);
             if (m->removedItems.size())
             {
                 for (std::vector<uint32>::iterator itr2 = m->removedItems.begin(); itr2 != m->removedItems.end(); ++itr2)
-                    CharacterDatabase.PExecute("DELETE FROM mail_items WHERE item_guid = '%u'", *itr2);
+                    trans->PAppend("DELETE FROM mail_items WHERE item_guid = '%u'", *itr2);
                 m->removedItems.clear();
             }
             m->state = MAIL_STATE_UNCHANGED;
@@ -16223,11 +16226,11 @@ void Player::_SaveMail()
         {
             if (m->HasItems())
                 for (std::vector<MailItemInfo>::iterator itr2 = m->items.begin(); itr2 != m->items.end(); ++itr2)
-                    CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'", itr2->item_guid);
+                    trans->PAppend("DELETE FROM item_instance WHERE guid = '%u'", itr2->item_guid);
             if (m->itemTextId)
                 CharacterDatabase.PExecute("DELETE FROM item_text WHERE id = '%u'", m->itemTextId);
-            CharacterDatabase.PExecute("DELETE FROM mail WHERE id = '%u'", m->messageID);
-            CharacterDatabase.PExecute("DELETE FROM mail_items WHERE mail_id = '%u'", m->messageID);
+            trans->PAppend("DELETE FROM mail WHERE id = '%u'", m->messageID);
+            trans->PAppend("DELETE FROM mail_items WHERE mail_id = '%u'", m->messageID);
         }
     }
 
@@ -16248,7 +16251,7 @@ void Player::_SaveMail()
     m_mailsUpdated = false;
 }
 
-void Player::_SaveQuestStatus()
+void Player::_SaveQuestStatus(SQLTransaction& trans)
 {
     // we don't need transactions here.
     for (QuestStatusMap::iterator i = mQuestStatus.begin(); i != mQuestStatus.end(); ++i)
@@ -16256,12 +16259,12 @@ void Player::_SaveQuestStatus()
         switch (i->second.uState)
         {
             case QUEST_NEW:
-                CharacterDatabase.PExecute("INSERT INTO character_queststatus (guid, quest, status, rewarded, explored, timer, mobcount1, mobcount2, mobcount3, mobcount4, itemcount1, itemcount2, itemcount3, itemcount4) "
+                trans->PAppend("INSERT INTO character_queststatus (guid, quest, status, rewarded, explored, timer, mobcount1, mobcount2, mobcount3, mobcount4, itemcount1, itemcount2, itemcount3, itemcount4) "
                     "VALUES ('%u', '%u', '%u', '%u', '%u', '" UI64FMTD "', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u')",
                     GetGUIDLow(), i->first, i->second.m_status, i->second.m_rewarded, i->second.m_explored, uint64(i->second.m_timer / IN_MILLISECONDS + sWorld->GetGameTime()), i->second.m_creatureOrGOcount[0], i->second.m_creatureOrGOcount[1], i->second.m_creatureOrGOcount[2], i->second.m_creatureOrGOcount[3], i->second.m_itemcount[0], i->second.m_itemcount[1], i->second.m_itemcount[2], i->second.m_itemcount[3]);
                 break;
             case QUEST_CHANGED:
-                CharacterDatabase.PExecute("UPDATE character_queststatus SET status = '%u', rewarded = '%u', explored = '%u', timer = '" UI64FMTD "', mobcount1 = '%u', mobcount2 = '%u', mobcount3 = '%u', mobcount4 = '%u', itemcount1 = '%u', itemcount2 = '%u', itemcount3 = '%u', itemcount4 = '%u'  WHERE guid = '%u' AND quest = '%u' ",
+                trans->PAppend("UPDATE character_queststatus SET status = '%u', rewarded = '%u', explored = '%u', timer = '" UI64FMTD "', mobcount1 = '%u', mobcount2 = '%u', mobcount3 = '%u', mobcount4 = '%u', itemcount1 = '%u', itemcount2 = '%u', itemcount3 = '%u', itemcount4 = '%u'  WHERE guid = '%u' AND quest = '%u' ",
                     i->second.m_status, i->second.m_rewarded, i->second.m_explored, uint64(i->second.m_timer / IN_MILLISECONDS + sWorld->GetGameTime()), i->second.m_creatureOrGOcount[0], i->second.m_creatureOrGOcount[1], i->second.m_creatureOrGOcount[2], i->second.m_creatureOrGOcount[3], i->second.m_itemcount[0], i->second.m_itemcount[1], i->second.m_itemcount[2], i->second.m_itemcount[3], GetGUIDLow(), i->first);
                 break;
             case QUEST_UNCHANGED:
@@ -16271,7 +16274,7 @@ void Player::_SaveQuestStatus()
     }
 }
 
-void Player::_SaveDailyQuestStatus()
+void Player::_SaveDailyQuestStatus(SQLTransaction& trans)
 {
     if (!m_DailyQuestChanged)
         return;
@@ -16281,14 +16284,14 @@ void Player::_SaveDailyQuestStatus()
     // save last daily quest time for all quests: we need only mostly reset time for reset check anyway
 
     // we don't need transactions here.
-    CharacterDatabase.PExecute("DELETE FROM character_queststatus_daily WHERE guid = '%u'", GetGUIDLow());
+    trans->PAppend("DELETE FROM character_queststatus_daily WHERE guid = '%u'", GetGUIDLow());
     for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
         if (GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx))
-            CharacterDatabase.PExecute("INSERT INTO character_queststatus_daily (guid, quest, time) VALUES ('%u', '%u', '" UI64FMTD "')",
+            trans->PAppend("INSERT INTO character_queststatus_daily (guid, quest, time) VALUES ('%u', '%u', '" UI64FMTD "')",
                 GetGUIDLow(), GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx), uint64(m_lastDailyQuestTime));
 }
 
-void Player::_SaveSkills()
+void Player::_SaveSkills(SQLTransaction& trans)
 {
     // we don't need transactions here.
     for (SkillStatusMap::iterator itr = mSkillStatus.begin(); itr != mSkillStatus.end();)
@@ -16301,7 +16304,7 @@ void Player::_SaveSkills()
 
         if (itr->second.uState == SKILL_DELETED)
         {
-            CharacterDatabase.PExecute("DELETE FROM character_skills WHERE guid = '%u' AND skill = '%u'", GetGUIDLow(), itr->first);
+            trans->PAppend("DELETE FROM character_skills WHERE guid = '%u' AND skill = '%u'", GetGUIDLow(), itr->first);
             mSkillStatus.erase(itr++);
             continue;
         }
@@ -16313,11 +16316,11 @@ void Player::_SaveSkills()
         switch (itr->second.uState)
         {
             case SKILL_NEW:
-                CharacterDatabase.PExecute("INSERT INTO character_skills (guid, skill, value, max) VALUES ('%u', '%u', '%u', '%u')",
+                trans->PAppend("INSERT INTO character_skills (guid, skill, value, max) VALUES ('%u', '%u', '%u', '%u')",
                     GetGUIDLow(), itr->first, value, max);
                 break;
             case SKILL_CHANGED:
-                CharacterDatabase.PExecute("UPDATE character_skills SET value = '%u', max = '%u'WHERE guid = '%u' AND skill = '%u' ",
+                trans->PAppend("UPDATE character_skills SET value = '%u', max = '%u'WHERE guid = '%u' AND skill = '%u' ",
                     value, max, GetGUIDLow(), itr->first );
                 break;
         };
@@ -16327,15 +16330,15 @@ void Player::_SaveSkills()
     }
 }
 
-void Player::_SaveSpells()
+void Player::_SaveSpells(SQLTransaction& trans)
 {
     for (PlayerSpellMap::const_iterator itr = m_spells.begin(), next = m_spells.begin(); itr != m_spells.end(); itr = next)
     {
         ++next;
         if (itr->second->state == PLAYERSPELL_REMOVED || itr->second->state == PLAYERSPELL_CHANGED)
-            CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = '%u' and spell = '%u'", GetGUIDLow(), itr->first);
+            trans->PAppend("DELETE FROM character_spell WHERE guid = '%u' and spell = '%u'", GetGUIDLow(), itr->first);
         if (itr->second->state == PLAYERSPELL_NEW || itr->second->state == PLAYERSPELL_CHANGED)
-            CharacterDatabase.PExecute("INSERT INTO character_spell (guid, spell, active, disabled) VALUES ('%u', '%u', '%u', '%u')", GetGUIDLow(), itr->first, itr->second->active ? 1 : 0, itr->second->disabled ? 1 : 0);
+            trans->PAppend("INSERT INTO character_spell (guid, spell, active, disabled) VALUES ('%u', '%u', '%u', '%u')", GetGUIDLow(), itr->first, itr->second->active ? 1 : 0, itr->second->disabled ? 1 : 0);
 
         if (itr->second->state == PLAYERSPELL_REMOVED)
             _removeSpell(itr->first);
@@ -16344,7 +16347,7 @@ void Player::_SaveSpells()
     }
 }
 
-void Player::_SaveTutorials()
+void Player::_SaveTutorials(SQLTransaction& trans)
 {
     if (!m_TutorialsChanged)
         return;
@@ -17173,18 +17176,18 @@ void Player::RemovePetitionsAndSigns(uint64 guid, uint32 type)
             CharacterDatabase.PExecute("DELETE FROM petition_sign WHERE playerguid = '%u' AND type = '%u'", GUID_LOPART(guid), type);
     }
 
-    CharacterDatabase.BeginTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
     if (type == 10)
     {
-        CharacterDatabase.PExecute("DELETE FROM petition WHERE ownerguid = '%u'", GUID_LOPART(guid));
-        CharacterDatabase.PExecute("DELETE FROM petition_sign WHERE ownerguid = '%u'", GUID_LOPART(guid));
+        trans->PAppend("DELETE FROM petition WHERE ownerguid = '%u'", GUID_LOPART(guid));
+        trans->PAppend("DELETE FROM petition_sign WHERE ownerguid = '%u'", GUID_LOPART(guid));
     }
     else
     {
-        CharacterDatabase.PExecute("DELETE FROM petition WHERE ownerguid = '%u' AND type = '%u'", GUID_LOPART(guid), type);
-        CharacterDatabase.PExecute("DELETE FROM petition_sign WHERE ownerguid = '%u' AND type = '%u'", GUID_LOPART(guid), type);
+        trans->PAppend("DELETE FROM petition WHERE ownerguid = '%u' AND type = '%u'", GUID_LOPART(guid), type);
+        trans->PAppend("DELETE FROM petition_sign WHERE ownerguid = '%u' AND type = '%u'", GUID_LOPART(guid), type);
     }
-    CharacterDatabase.CommitTransaction();
+    CharacterDatabase.CommitTransaction(trans);
 }
 
 void Player::SetRestBonus (float rest_bonus_new)
@@ -19208,13 +19211,14 @@ void Player::AutoUnequipOffhandIfNeed()
     else
     {
         MoveItemFromInventory(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND, true);
-        CharacterDatabase.BeginTransaction();
-        offItem->DeleteFromInventoryDB();                   // deletes item from character's inventory
-        offItem->SaveToDB();                                // recursive and not have transaction guard into self, item not in inventory and can be save standalone
-        CharacterDatabase.CommitTransaction();
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
+        offItem->DeleteFromInventoryDB(trans);                   // deletes item from character's inventory
+        offItem->SaveToDB(trans);                                // recursive and not have transaction guard into self, item not in inventory and can be save standalone
 
         std::string subject = GetSession()->GetSkyFireString(LANG_NOT_EQUIPPED_ITEM);
-        MailDraft(subject).AddItem(offItem).SendMailTo(this, MailSender(this, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED);
+        MailDraft(subject, "There were problems with equipping one or several items").AddItem(offItem).SendMailTo(trans, this, MailSender(this, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED);
+
+        CharacterDatabase.CommitTransaction(trans);
     }
 }
 
@@ -20173,13 +20177,13 @@ void Player::SetHomebindToLocation(WorldLocation const& loc, uint32 area_id)
         m_homebindMapId, m_homebindAreaId, m_homebindX, m_homebindY, m_homebindZ, GetGUIDLow());
 }
 
-void Player::_SaveBGData()
+void Player::_SaveBGData(SQLTransaction& trans)
 {
-    CharacterDatabase.PExecute("DELETE FROM character_battleground_data WHERE guid='%u'", GetGUIDLow());
+    trans->PAppend("DELETE FROM character_battleground_data WHERE guid='%u'", GetGUIDLow());
     if (m_bgData.bgInstanceID)
     {
         /* guid, bgInstanceID, bgTeam, x, y, z, o, map, taxi[0], taxi[1], mountSpell */
-        CharacterDatabase.PExecute("INSERT INTO character_battleground_data VALUES ('%u', '%u', '%u', '%f', '%f', '%f', '%f', '%u', '%u', '%u', '%u')",
+        trans->PAppend("INSERT INTO character_battleground_data VALUES ('%u', '%u', '%u', '%f', '%f', '%f', '%f', '%u', '%u', '%u', '%u')",
             GetGUIDLow(), m_bgData.bgInstanceID, m_bgData.bgTeam, m_bgData.joinPos.GetPositionX(), m_bgData.joinPos.GetPositionY(), m_bgData.joinPos.GetPositionZ(),
             m_bgData.joinPos.GetOrientation(), m_bgData.joinPos.GetMapId(), m_bgData.taxiPath[0], m_bgData.taxiPath[1], m_bgData.mountSpell);
     }

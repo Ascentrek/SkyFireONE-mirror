@@ -140,13 +140,17 @@ class LootStore
 
         char const* GetName() const { return m_name; }
         char const* GetEntryName() const { return m_entryName; }
+		bool IsRatesAllowed() const { return m_ratesAllowed; }
+
     protected:
         void LoadLootTable();
         void Clear();
+
     private:
         LootTemplateMap m_LootTemplates;
         char const* m_name;
         char const* m_entryName;
+		bool m_ratesAllowed;
 };
 
 class LootTemplate
@@ -215,6 +219,7 @@ struct Loot
     std::vector<LootItem> quest_items;
     uint32 gold;
     uint8 unlootedCount;
+	uint64 roundRobinPlayer;                                // GUID of the player having the Round-Robin ownership for the loot. If 0, round robin owner has released.
 
     Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0) {}
     ~Loot() { clear(); }
@@ -257,7 +262,7 @@ struct Loot
     void RemoveLooter(uint64 GUID) { PlayersLooting.erase(GUID); }
 
     void generateMoneyLoot(uint32 minAmount, uint32 maxAmount);
-    void FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner);
+	bool FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner, bool personal, bool noEmptyError = false, uint16 lootMode = LOOT_MODE_DEFAULT);
 
     // Inserts the item into the loot (called by LootTemplate processors)
     void AddItem(LootStoreItem const & item);
@@ -266,6 +271,7 @@ struct Loot
     uint32 GetMaxSlotInLootFor(Player* player) const;
 
     private:
+		void FillNotNormalLootFor(Player* player);
         std::set<uint64> PlayersLooting;
         QuestItemMap PlayerQuestItems;
         QuestItemMap PlayerFFAItems;

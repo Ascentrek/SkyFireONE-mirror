@@ -523,18 +523,17 @@ void GameObject::Delete()
         AddObjectToRemoveList();
 }
 
-void GameObject::getFishLoot(Loot *fishloot)
+void GameObject::getFishLoot(Loot *fishloot, Player* loot_owner)
 {
-    fishloot->clear();
+	fishloot->clear();
 
-    uint32 subzone = GetAreaId();
+	uint32 zone, subzone;
+	GetZoneAndAreaId(zone, subzone);
 
-    // if subzone loot exist use it
-    if (LootTemplates_Fishing.HaveLootFor(subzone))
-        fishloot->FillLoot(subzone, LootTemplates_Fishing, NULL);
-    // else use zone loot
-    else
-        fishloot->FillLoot(GetZoneId(), LootTemplates_Fishing, NULL);
+	// if subzone loot exist use it
+	if (!fishloot->FillLoot(subzone, LootTemplates_Fishing, loot_owner, true, true))
+		// else use zone loot (must exist in like case)
+		fishloot->FillLoot(zone, LootTemplates_Fishing, loot_owner, true);
 }
 
 void GameObject::SaveToDB()
@@ -599,10 +598,10 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
         << uint32(GetGoAnimProgress()) << ", "
         << uint32(GetGoState()) << ")";
 
-    WorldDatabase.BeginTransaction();
-    WorldDatabase.PExecute("DELETE FROM gameobject WHERE guid = '%u'", m_DBTableGuid);
-    WorldDatabase.PExecute(ss.str().c_str());
-    WorldDatabase.CommitTransaction();
+    SQLTransaction trans = WorldDatabase.BeginTransaction();
+    trans->PAppend("DELETE FROM gameobject WHERE guid = '%u'", m_DBTableGuid);
+    trans->PAppend(ss.str().c_str());
+    WorldDatabase.CommitTransaction(trans);
 }
 
 bool GameObject::LoadFromDB(uint32 guid, Map *map)

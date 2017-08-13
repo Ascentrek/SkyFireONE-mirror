@@ -61,7 +61,7 @@ class ReputationMgr
         explicit ReputationMgr(Player* owner) : m_player(owner) {}
         ~ReputationMgr() {}
 
-        void SaveToDB();
+        void SaveToDB(SQLTransaction& trans);
         void LoadFromDB(QueryResult_AutoPtr result);
     public:                                                 // statics
         static const int32 PointsInRank[MAX_REPUTATION_RANK];

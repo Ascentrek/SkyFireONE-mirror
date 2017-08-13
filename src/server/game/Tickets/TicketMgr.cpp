@@ -202,9 +202,9 @@ void TicketMgr::SaveGMTicket(GM_Ticket* ticket)
     ss << ticket->comment << "', '";
     ss << ticket->escalated << "', '";
     ss << (ticket->viewed ? 1 : 0) << "');";
-    CharacterDatabase.BeginTransaction();
-    CharacterDatabase.Execute(ss.str().c_str());
-    CharacterDatabase.CommitTransaction();
+	SQLTransaction trans = CharacterDatabase.BeginTransaction();
+	trans->PAppend(ss.str().c_str());
+    CharacterDatabase.CommitTransaction(trans);
 }
 
 void TicketMgr::UpdateGMTicket(GM_Ticket *ticket)

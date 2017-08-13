@@ -814,7 +814,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char *args)
     if (getSelectedPlayer() && arg1 && !arg3)
     {
         targetAccountId = getSelectedPlayer()->GetSession()->GetAccountId();
-		AccountMgr::GetName(targetAccountId, targetAccountName);
+        AccountMgr::GetName(targetAccountId, targetAccountName);
         Player* targetPlayer = getSelectedPlayer();
         gm = atoi(arg1);
         uint32 gmRealmID = arg2 ? atoi(arg2) : realmID;
@@ -5498,7 +5498,7 @@ bool ChatHandler::HandleBanListHelper(QueryResult_AutoPtr result)
                 account_name = fields[1].GetCppString();
             // "character" case, name need extract from another DB
             else
-				AccountMgr::GetName (account_id, account_name);
+                AccountMgr::GetName (account_id, account_name);
 
             // No SQL injection. id is uint32.
             QueryResult_AutoPtr banInfo = LoginDatabase.PQuery("SELECT bandate, unbandate, bannedby, banreason FROM account_banned WHERE id = %u ORDER BY unbandate", account_id);
@@ -6382,7 +6382,7 @@ bool ChatHandler::HandleAccountSetAddonCommand(const char *args)
             return false;
 
         account_id = player->GetSession()->GetAccountId();
-		AccountMgr::GetName(account_id, account_name);
+        AccountMgr::GetName(account_id, account_name);
         szExp = szAcc;
     }
     else
@@ -6545,19 +6545,22 @@ bool ChatHandler::HandleSendItemsCommand(const char *args)
     Player *receiver = ObjectAccessor::FindPlayer(receiver_guid);
 
     // fill mail
-    MailDraft draft(subject, itemTextId);
+    MailDraft draft(subject, text);
+
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
     for (ItemPairs::const_iterator itr = items.begin(); itr != items.end(); ++itr)
     {
         if (Item* item = Item::CreateItem(itr->first, itr->second, m_session ? m_session->GetPlayer() : 0))
         {
-            item->SaveToDB();                               // save for prevent lost at next mail load, if send fail then item will deleted
+            item->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
             draft.AddItem(item);
         }
     }
 
-    draft.SendMailTo(MailReceiver(receiver, GUID_LOPART(receiver_guid)), sender);
-
+    draft.SendMailTo(trans, MailReceiver(receiver, GUID_LOPART(receiver_guid)), sender);
+    CharacterDatabase.CommitTransaction(trans);
+    
     PSendSysMessage(LANG_MAIL_SENT, name.c_str());
     return true;
 }
@@ -6644,10 +6647,14 @@ bool ChatHandler::HandleSendMoneyCommand(const char *args)
 
     Player *receiver = ObjectAccessor::FindPlayer(receiver_guid);
 
-        MailDraft(subject, itemTextId)
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+        
+	MailDraft(subject, text)
         .AddMoney(money)
-        .SendMailTo(MailReceiver(receiver, GUID_LOPART(receiver_guid)), sender);
-
+		.SendMailTo(trans, MailReceiver(receiver, GUID_LOPART(receiver_guid)), sender);
+        
+    CharacterDatabase.CommitTransaction(trans);
+    
     PSendSysMessage(LANG_MAIL_SENT, name.c_str());
     return true;
 }

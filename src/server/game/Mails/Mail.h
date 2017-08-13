@@ -117,38 +117,41 @@ class MailDraft
 {
     typedef std::map<uint32, Item*> MailItemMap;
 
-    public:                                                 // Constructors
-        explicit MailDraft(uint16 mailTemplateId, bool need_items = true)
-            : m_mailTemplateId(mailTemplateId), m_mailTemplateItemsNeed(need_items), m_bodyId(0), m_money(0), m_COD(0)
-        {}
-        MailDraft(std::string subject, uint32 itemTextId = 0)
-            : m_mailTemplateId(0), m_mailTemplateItemsNeed(false), m_subject(subject), m_bodyId(itemTextId), m_money(0), m_COD(0) {}
-    public:                                                 // Accessors
-        uint16 GetMailTemplateId() const { return m_mailTemplateId; }
-        std::string const& GetSubject() const { return m_subject; }
-        uint32 GetBodyId() const { return m_bodyId; }
-        uint32 GetMoney() const { return m_money; }
-        uint32 GetCOD() const { return m_COD; }
-    public:                                                 // modifiers
-        MailDraft& AddItem(Item* item);
-        MailDraft& AddMoney(uint32 money) { m_money = money; return *this; }
-        MailDraft& AddCOD(uint32 COD) { m_COD = COD; return *this; }
-    public:                                                 // finishers
-        void SendReturnToSender(uint32 sender_acc, uint32 sender_guid, uint32 receiver_guid);
-        void SendMailTo(MailReceiver const& receiver, MailSender const& sender, MailCheckMask checked = MAIL_CHECK_MASK_NONE, uint32 deliver_delay = 0);
-    private:
-        void deleteIncludedItems(bool inDB = false);
-        void prepareItems(Player* receiver);                // called from SendMailTo for generate mailTemplateBase items
+public:                                                 // Constructors
+    explicit MailDraft(uint16 mailTemplateId, bool need_items = true)
+        : m_mailTemplateId(mailTemplateId), m_mailTemplateItemsNeed(need_items), m_money(0), m_COD(0)
+    {}
+    MailDraft(std::string subject, std::string body)
+        : m_mailTemplateId(0), m_mailTemplateItemsNeed(false), m_subject(subject), m_body(body), m_money(0), m_COD(0) {}
+public:                                                 // Accessors
+    uint16 GetMailTemplateId() const { return m_mailTemplateId; }
+    std::string const& GetSubject() const { return m_subject; }
+    uint32 GetMoney() const { return m_money; }
+    uint32 GetCOD() const { return m_COD; }
+    std::string const& GetBody() const { return m_body; }
 
-        uint16      m_mailTemplateId;
-        bool        m_mailTemplateItemsNeed;
-        std::string m_subject;
-        uint32      m_bodyId;
+public:                                                 // modifiers
+    MailDraft& AddItem(Item* item);
+    MailDraft& AddMoney(uint32 money) { m_money = money; return *this; }
+    MailDraft& AddCOD(uint32 COD) { m_COD = COD; return *this; }
 
-        MailItemMap m_items;                                // Keep the items in a map to avoid duplicate guids (which can happen), store only low part of guid
+public:                                                 // finishers
+    void SendReturnToSender(uint32 sender_acc, uint32 sender_guid, uint32 receiver_guid);
+    void SendMailTo(SQLTransaction& trans, MailReceiver const& receiver, MailSender const& sender, MailCheckMask checked = MAIL_CHECK_MASK_NONE, uint32 deliver_delay = 0);
 
-        uint32 m_money;
-        uint32 m_COD;
+private:
+    void deleteIncludedItems(bool inDB = false, SQLTransaction& trans = SQLTransaction(NULL));
+    void prepareItems(Player* receiver, SQLTransaction& trans);                // called from SendMailTo for generate mailTemplateBase items
+
+    uint16      m_mailTemplateId;
+    bool        m_mailTemplateItemsNeed;
+    std::string m_subject;
+    std::string m_body;
+
+    MailItemMap m_items;                                // Keep the items in a map to avoid duplicate guids (which can happen), store only low part of guid
+
+    uint32 m_money;
+    uint32 m_COD;
 };
 
 struct MailItemInfo
@@ -166,6 +169,7 @@ struct Mail
     uint32 sender;
     uint32 receiver;
     std::string subject;
+    std::string body;
     uint32 itemTextId;
     std::vector<MailItemInfo> items;
     std::vector<uint32> removedItems;

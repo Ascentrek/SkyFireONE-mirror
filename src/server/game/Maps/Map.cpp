@@ -1810,6 +1810,14 @@ uint32 Map::GetZoneId(uint16 areaflag, uint32 map_id)
         return 0;
 }
 
+void Map::GetZoneAndAreaIdByAreaFlag(uint32& zoneid, uint32& areaid, uint16 areaflag, uint32 map_id)
+{
+	AreaTableEntry const* entry = GetAreaEntryByAreaFlagAndMap(areaflag, map_id);
+
+	areaid = entry ? entry->ID : 0;
+	zoneid = entry ? ((entry->zone != 0) ? entry->zone : entry->ID) : 0;
+}
+
 bool Map::IsInWater(float x, float y, float pZ, LiquidData *data) const
 {
     // Check surface in x, y point for liquid

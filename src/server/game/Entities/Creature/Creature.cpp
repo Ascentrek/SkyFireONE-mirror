@@ -981,9 +981,9 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     data.dynamicflags = dynamicflags;
 
     // updated in DB
-    WorldDatabase.BeginTransaction();
+    SQLTransaction trans = WorldDatabase.BeginTransaction();
 
-    WorldDatabase.PExecute("DELETE FROM creature WHERE guid = '%u'", m_DBTableGuid);
+    trans->PAppend("DELETE FROM creature WHERE guid = '%u'", m_DBTableGuid);
 
     std::ostringstream ss;
     ss << "INSERT INTO creature VALUES ("
@@ -1005,9 +1005,9 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
         << (m_isDeadByDefault ? 1 : 0) << ", "               //is_dead
         << GetDefaultMovementType() << ")";                 //default movement generator type
 
-    WorldDatabase.PExecute(ss.str().c_str());
+    trans->Append(ss.str().c_str());
 
-    WorldDatabase.CommitTransaction();
+    WorldDatabase.CommitTransaction(trans);
 }
 
 void Creature::SelectLevel(const CreatureTemplate *cinfo)
@@ -1158,13 +1158,13 @@ bool Creature::LoadCreatureFromDB(uint32 guid, Map* map, bool addToMap)
     }
 
     m_DBTableGuid = guid;
-	if (map->GetInstanceId() == 0)
-	{
-		if (map->GetCreature(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT)))
-			return false;
-	}
-	else
-		guid = sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT);
+    if (map->GetInstanceId() == 0)
+    {
+        if (map->GetCreature(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT)))
+            return false;
+    }
+    else
+        guid = sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT);
 
     uint16 team = 0;
     if (!Create(guid, map, data->id, team, data->posX, data->posY, data->posZ, data->orientation, data))
@@ -1273,12 +1273,12 @@ void Creature::DeleteFromDB()
     sObjectMgr->SaveCreatureRespawnTime(m_DBTableGuid, GetInstanceId(), 0);
     sObjectMgr->DeleteCreatureData(m_DBTableGuid);
 
-    WorldDatabase.BeginTransaction();
-    WorldDatabase.PExecute("DELETE FROM creature WHERE guid = '%u'", m_DBTableGuid);
-    WorldDatabase.PExecute("DELETE FROM creature_addon WHERE guid = '%u'", m_DBTableGuid);
-    WorldDatabase.PExecute("DELETE FROM game_event_creature WHERE guid = '%u'", m_DBTableGuid);
-    WorldDatabase.PExecute("DELETE FROM game_event_model_equip WHERE guid = '%u'", m_DBTableGuid);
-    WorldDatabase.CommitTransaction();
+    SQLTransaction trans = WorldDatabase.BeginTransaction();
+    trans->PAppend("DELETE FROM creature WHERE guid = '%u'", m_DBTableGuid);
+    trans->PAppend("DELETE FROM creature_addon WHERE guid = '%u'", m_DBTableGuid);
+    trans->PAppend("DELETE FROM game_event_creature WHERE guid = '%u'", m_DBTableGuid);
+    trans->PAppend("DELETE FROM game_event_model_equip WHERE guid = '%u'", m_DBTableGuid);
+    WorldDatabase.CommitTransaction(trans);
 }
 
 bool Creature::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool is3dDistance) const
