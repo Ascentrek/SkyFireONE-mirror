@@ -37,11 +37,11 @@ enum SpellEffIndex
 
 enum LootModes
 {
-	LOOT_MODE_DEFAULT = 1,
-	LOOT_MODE_HARD_MODE_1 = 2,
-	LOOT_MODE_HARD_MODE_2 = 4,
-	LOOT_MODE_HARD_MODE_3 = 8,
-	LOOT_MODE_HARD_MODE_4 = 16
+    LOOT_MODE_DEFAULT = 1,
+    LOOT_MODE_HARD_MODE_1 = 2,  // not used in tbc.
+    LOOT_MODE_HARD_MODE_2 = 4,  // not used in tbc.
+    LOOT_MODE_HARD_MODE_3 = 8,  // not used in tbc.
+    LOOT_MODE_HARD_MODE_4 = 16  // not used in tbc.
 };
 
 enum Gender

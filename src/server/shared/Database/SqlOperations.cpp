@@ -21,6 +21,7 @@
 #include "SQLOperations.h"
 #include "MySQLConnection.h"
 #include "Log.h"
+#include "Common.h"
 
  /*! Basic, ad-hoc queries. */
 BasicStatementTask::BasicStatementTask(const char* sql) : m_has_result(false)       

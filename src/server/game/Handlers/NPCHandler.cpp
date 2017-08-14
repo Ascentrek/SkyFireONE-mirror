@@ -768,12 +768,12 @@ void WorldSession::HandleRepairItemOpcode(WorldPacket& recv_data)
         if (!pGuild)
             return;
 
-		SQLTransaction trans = CharacterDatabase.BeginTransaction();
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
         pGuild->LogBankEvent(trans,GUILD_BANK_LOG_REPAIR_MONEY, 0, _player->GetGUIDLow(), TotalCost);
         pGuild->SendMoneyInfo(this, _player->GetGUIDLow());
 
-		CharacterDatabase.CommitTransaction(trans);
+        CharacterDatabase.CommitTransaction(trans);
     }
 }
 

@@ -361,10 +361,10 @@ void Pet::SavePetToDB(PetSaveMode mode)
 
     uint32 curhealth = GetHealth();
     uint32 curmana = GetPower(POWER_MANA);
-	
-	SQLTransaction trans = CharacterDatabase.BeginTransaction();
     
-	switch (mode)
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    
+    switch (mode)
     {
         case PET_SAVE_IN_STABLE_SLOT_1:
         case PET_SAVE_IN_STABLE_SLOT_2:

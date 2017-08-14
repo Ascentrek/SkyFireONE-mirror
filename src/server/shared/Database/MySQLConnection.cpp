@@ -23,6 +23,7 @@
 #include "Timer.h"
 #include "Log.h"
 #include "DatabaseEnv.h"
+#include "Common.h"
 
 MySQLConnection::MySQLConnection() :
 m_Mysql(NULL),      

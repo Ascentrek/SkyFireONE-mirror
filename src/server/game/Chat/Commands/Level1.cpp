@@ -2350,7 +2350,7 @@ bool ChatHandler::HandleSendMailCommand(const char* args)
         return false;
     }
 
-	Mail *m = new Mail;
+    Mail *m = new Mail;
     uint32 mailId = sObjectMgr->GenerateMailID();
     // from console show not existed sender
     MailSender sender(MAIL_NORMAL, m_session ? m_session->GetPlayer()->GetGUIDLow() : 0, MAIL_STATIONERY_GM);
@@ -2364,7 +2364,7 @@ bool ChatHandler::HandleSendMailCommand(const char* args)
     MailDraft(subject, text)
         .SendMailTo(trans, MailReceiver(receiver, GUID_LOPART(receiver_guid)), sender);
 
-	CharacterDatabase.CommitTransaction(trans);
+    CharacterDatabase.CommitTransaction(trans);
     
     PSendSysMessage(LANG_MAIL_SENT, name.c_str());
     return true;

@@ -173,9 +173,9 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry *auction, SQLTransaction& 
         if (bidder)
             bidder->GetSession()->SendAuctionBidderNotification(auction->GetHouseId(), auction->Id, bidder_guid, 0, 0, auction->item_template);
 
-		MailDraft(msgAuctionWonSubject.str(), msgAuctionWonBody.str())
-			.AddItem(pItem)
-			.SendMailTo(trans, MailReceiver(bidder, auction->bidder), auction, MAIL_CHECK_MASK_COPIED);
+        MailDraft(msgAuctionWonSubject.str(), msgAuctionWonBody.str())
+            .AddItem(pItem)
+            .SendMailTo(trans, MailReceiver(bidder, auction->bidder), auction, MAIL_CHECK_MASK_COPIED);
     }
 }
 
@@ -205,7 +205,7 @@ void AuctionHouseMgr::SendAuctionSalePendingMail(AuctionEntry * auction, SQLTran
 
         uint32 itemTextId = sObjectMgr->CreateItemText(msgAuctionSalePendingBody.str());
 
-		MailDraft(msgAuctionSalePendingSubject.str(), msgAuctionSalePendingBody.str())
+        MailDraft(msgAuctionSalePendingSubject.str(), msgAuctionSalePendingBody.str())
             .SendMailTo(trans, MailReceiver(owner, auction->owner), auction, MAIL_CHECK_MASK_COPIED);
     }
 }
@@ -242,7 +242,7 @@ void AuctionHouseMgr::SendAuctionSuccessfulMail(AuctionEntry * auction, SQLTrans
             owner->GetSession()->SendAuctionOwnerNotification(auction);
         }
 
-		MailDraft(msgAuctionSuccessfulSubject.str(), auctionSuccessfulBody.str())
+        MailDraft(msgAuctionSuccessfulSubject.str(), auctionSuccessfulBody.str())
             .AddMoney(profit)
             .SendMailTo(trans, MailReceiver(owner, auction->owner), auction, MAIL_CHECK_MASK_COPIED, HOUR);
     }
@@ -268,7 +268,7 @@ void AuctionHouseMgr::SendAuctionExpiredMail(AuctionEntry * auction, SQLTransact
         if (owner)
             owner->GetSession()->SendAuctionOwnerNotification(auction);
 
-		MailDraft(subject.str(), "")                        // TODO: fix body
+        MailDraft(subject.str(), "")                        // TODO: fix body
             .AddItem(pItem)
             .SendMailTo(trans, MailReceiver(owner, auction->owner), auction, MAIL_CHECK_MASK_COPIED);
     }
@@ -276,8 +276,8 @@ void AuctionHouseMgr::SendAuctionExpiredMail(AuctionEntry * auction, SQLTransact
 //this function sends mail to old bidder    
 void AuctionHouseMgr::SendAuctionOutbiddedMail(AuctionEntry *auction, uint32 newPrice, Player* newBidder, SQLTransaction& trans)        
 {       
-	uint64 oldBidder_guid = MAKE_NEW_GUID(auction->bidder, 0, HIGHGUID_PLAYER);
-	Player* oldBidder = ObjectAccessor::FindPlayer(oldBidder_guid);
+    uint64 oldBidder_guid = MAKE_NEW_GUID(auction->bidder, 0, HIGHGUID_PLAYER);
+    Player* oldBidder = ObjectAccessor::FindPlayer(oldBidder_guid);
         
     uint32 oldBidder_accId = 0;     
     if (!oldBidder)     
@@ -301,8 +301,8 @@ void AuctionHouseMgr::SendAuctionOutbiddedMail(AuctionEntry *auction, uint32 new
 //this function sends mail, when auction is cancelled to old bidder     
 void AuctionHouseMgr::SendAuctionCancelledToBidderMail(AuctionEntry* auction, SQLTransaction& trans)        
 {       
-	uint64 bidder_guid = MAKE_NEW_GUID(auction->bidder, 0, HIGHGUID_PLAYER);
-	Player* bidder = ObjectAccessor::FindPlayer(bidder_guid);
+    uint64 bidder_guid = MAKE_NEW_GUID(auction->bidder, 0, HIGHGUID_PLAYER);
+    Player* bidder = ObjectAccessor::FindPlayer(bidder_guid);
         
     uint32 bidder_accId = 0;        
     if (!bidder)        

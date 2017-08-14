@@ -581,7 +581,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         uint32 GetRespawnDelay() const { return m_respawnDelayTime; }
         void Refresh();
         void Delete();
-		void getFishLoot(Loot* loot, Player* loot_owner);
+        void getFishLoot(Loot* loot, Player* loot_owner);
         
         GameobjectTypes GetGoType() const { return GameobjectTypes(GetUInt32Value(GAMEOBJECT_TYPE_ID)); }
         void SetGoType(GameobjectTypes type) { SetUInt32Value(GAMEOBJECT_TYPE_ID, type); }
@@ -597,7 +597,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         LootState getLootState() const { return m_lootState; }
         void SetLootState(LootState s) { m_lootState = s; }
 
-		uint16 GetLootMode() { return m_LootMode; }
+        uint16 GetLootMode() { return m_LootMode; }
 
         void AddToSkillupList(uint32 PlayerGuidLow) { m_SkillupList.push_back(PlayerGuidLow); }
         bool IsInSkillupList(uint32 PlayerGuidLow) const
@@ -678,7 +678,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         uint32 m_DBTableGuid;                               // For new or temporary gameobjects is 0 for saved it is lowguid
         GameObjectTemplate const* m_goInfo;
         GameObjectData const* m_goData;
-		uint16 m_LootMode;                                  // bitmask, default LOOT_MODE_DEFAULT, determines what loot will be lootable
+        uint16 m_LootMode;                                  // bitmask, default LOOT_MODE_DEFAULT, determines what loot will be lootable
     private:
         void SwitchDoorOrButton(bool activate, bool alternative = false);
         GameObjectAI* m_AI;

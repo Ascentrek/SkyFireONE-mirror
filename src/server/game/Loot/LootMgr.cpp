@@ -362,64 +362,64 @@ void Loot::AddItem(LootStoreItem const & item)
 // Calls processor of corresponding LootTemplate (which handles everything including references)
 bool Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner, bool personal, bool noEmptyError, uint16 lootMode /*= LOOT_MODE_DEFAULT*/)
 {
-	// Must be provided
-	if (!loot_owner)
-		return false;
+    // Must be provided
+    if (!loot_owner)
+        return false;
 
-	LootTemplate const* tab = store.GetLootFor(loot_id);
+    LootTemplate const* tab = store.GetLootFor(loot_id);
 
-	if (!tab)
-	{
-		if (!noEmptyError)
-			sLog->outErrorDb("Table '%s' loot id #%u used but it doesn't have records.", store.GetName(), loot_id);
-		return false;
-	}
+    if (!tab)
+    {
+        if (!noEmptyError)
+            sLog->outErrorDb("Table '%s' loot id #%u used but it doesn't have records.", store.GetName(), loot_id);
+        return false;
+    }
 
-	items.reserve(MAX_NR_LOOT_ITEMS);
-	quest_items.reserve(MAX_NR_QUEST_ITEMS);
-	
-	// Processing is done there, callback via Loot::AddItem()
-	tab->Process(*this, store);
+    items.reserve(MAX_NR_LOOT_ITEMS);
+    quest_items.reserve(MAX_NR_QUEST_ITEMS);
+    
+    // Processing is done there, callback via Loot::AddItem()
+    tab->Process(*this, store);
 
-	// Setting access rights for group loot case
-	Group * pGroup = loot_owner->GetGroup();
-	if (!personal && pGroup)
-	{
-		roundRobinPlayer = loot_owner->GetGUID();
+    // Setting access rights for group loot case
+    Group * pGroup = loot_owner->GetGroup();
+    if (!personal && pGroup)
+    {
+        roundRobinPlayer = loot_owner->GetGUID();
 
-		for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
-			if (Player* pl = itr->getSource())
-				FillNotNormalLootFor(pl);
+        for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+            if (Player* pl = itr->getSource())
+                FillNotNormalLootFor(pl);
 
-		for (uint8 i = 0; i < items.size(); ++i)
-		{
-			if (ItemPrototype const *proto = sItemStorage.LookupEntry<ItemPrototype>(items[i].itemid))
-				if (proto->Quality < uint32(pGroup->GetLootThreshold()))
-					items[i].is_underthreshold = true;
-		}
-	}
-	// ... for personal loot
-	else
-		FillNotNormalLootFor(loot_owner);
+        for (uint8 i = 0; i < items.size(); ++i)
+        {
+            if (ItemPrototype const *proto = sItemStorage.LookupEntry<ItemPrototype>(items[i].itemid))
+                if (proto->Quality < uint32(pGroup->GetLootThreshold()))
+                    items[i].is_underthreshold = true;
+        }
+    }
+    // ... for personal loot
+    else
+        FillNotNormalLootFor(loot_owner);
 
-	return true;
+    return true;
 }
 
 void Loot::FillNotNormalLootFor(Player* pl)
 {
-	uint32 plguid = pl->GetGUIDLow();
+    uint32 plguid = pl->GetGUIDLow();
 
-	QuestItemMap::const_iterator qmapitr = PlayerQuestItems.find(plguid);
-	if (qmapitr == PlayerQuestItems.end())
-		FillQuestLoot(pl);
+    QuestItemMap::const_iterator qmapitr = PlayerQuestItems.find(plguid);
+    if (qmapitr == PlayerQuestItems.end())
+        FillQuestLoot(pl);
 
-	qmapitr = PlayerFFAItems.find(plguid);
-	if (qmapitr == PlayerFFAItems.end())
-		FillFFALoot(pl);
+    qmapitr = PlayerFFAItems.find(plguid);
+    if (qmapitr == PlayerFFAItems.end())
+        FillFFALoot(pl);
 
-	qmapitr = PlayerNonQuestNonFFAConditionalItems.find(plguid);
-	if (qmapitr == PlayerNonQuestNonFFAConditionalItems.end())
-		FillNonQuestNonFFAConditionalLoot(pl);
+    qmapitr = PlayerNonQuestNonFFAConditionalItems.find(plguid);
+    if (qmapitr == PlayerNonQuestNonFFAConditionalItems.end())
+        FillNonQuestNonFFAConditionalLoot(pl);
 }
 
 QuestItemList* Loot::FillFFALoot(Player* player)

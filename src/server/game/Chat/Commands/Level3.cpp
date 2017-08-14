@@ -6649,9 +6649,9 @@ bool ChatHandler::HandleSendMoneyCommand(const char *args)
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
         
-	MailDraft(subject, text)
+    MailDraft(subject, text)
         .AddMoney(money)
-		.SendMailTo(trans, MailReceiver(receiver, GUID_LOPART(receiver_guid)), sender);
+        .SendMailTo(trans, MailReceiver(receiver, GUID_LOPART(receiver_guid)), sender);
         
     CharacterDatabase.CommitTransaction(trans);
     

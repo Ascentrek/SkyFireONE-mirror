@@ -525,15 +525,15 @@ void GameObject::Delete()
 
 void GameObject::getFishLoot(Loot *fishloot, Player* loot_owner)
 {
-	fishloot->clear();
+    fishloot->clear();
 
-	uint32 zone, subzone;
-	GetZoneAndAreaId(zone, subzone);
+    uint32 zone, subzone;
+    GetZoneAndAreaId(zone, subzone);
 
-	// if subzone loot exist use it
-	if (!fishloot->FillLoot(subzone, LootTemplates_Fishing, loot_owner, true, true))
-		// else use zone loot (must exist in like case)
-		fishloot->FillLoot(zone, LootTemplates_Fishing, loot_owner, true);
+    // if subzone loot exist use it
+    if (!fishloot->FillLoot(subzone, LootTemplates_Fishing, loot_owner, true, true))
+        // else use zone loot (must exist in like case)
+        fishloot->FillLoot(zone, LootTemplates_Fishing, loot_owner, true);
 }
 
 void GameObject::SaveToDB()
