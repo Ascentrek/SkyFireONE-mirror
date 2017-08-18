@@ -22,8 +22,7 @@
 
 #include "Common.h"
 #include "Define.h"
-#include "Logging/Log.h"
-#include "DatabaseEnv.h"
+#include "Log.h"
 #include "Threading.h"
 #include "DatabaseEnv.h"
 #include "DatabaseWorker.h"
