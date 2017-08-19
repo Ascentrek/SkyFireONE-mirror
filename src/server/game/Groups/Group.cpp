@@ -36,15 +36,15 @@
 
 Group::Group()
 {
-    m_leaderGuid        = 0;
-    m_mainTank          = 0;
-    m_mainAssistant     = 0;
-    m_groupType         = GroupType(0);
-    m_bgGroup           = NULL;
-    m_lootMethod        = LootMethod(0);
-    m_looterGuid        = 0;
-    m_lootThreshold     = ITEM_QUALITY_UNCOMMON;
-    m_subGroupsCounts   = NULL;
+	m_leaderGuid = 0;
+	m_mainTank = 0;
+	m_mainAssistant = 0;
+	m_groupType = GroupType(0);
+	m_bgGroup = NULL;
+	m_lootMethod = LootMethod(0);
+	m_looterGuid = 0;
+	m_lootThreshold = ITEM_QUALITY_UNCOMMON;
+	m_subGroupsCounts = NULL;
 
 	for (uint8 i = 0; i < TARGETICONCOUNT; ++i)
 		m_targetIcons[i] = 0;

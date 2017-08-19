@@ -27,14 +27,13 @@ class Unit;
 
 class ReactorAI : public CreatureAI
 {
-    public:
+public:
 
-        explicit ReactorAI(Creature *c) : CreatureAI(c) {}
+	explicit ReactorAI(Creature *c) : CreatureAI(c) {}
 
-        void MoveInLineOfSight(Unit *);
+	void MoveInLineOfSight(Unit *);
 
-        void UpdateAI(const uint32);
-        static int Permissible(const Creature *);
+	void UpdateAI(const uint32);
+	static int Permissible(const Creature *);
 };
 #endif
-
