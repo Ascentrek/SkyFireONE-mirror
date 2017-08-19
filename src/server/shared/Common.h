@@ -21,9 +21,9 @@
 #ifndef SKYFIRE_COMMON_H
 #define SKYFIRE_COMMON_H
 
- // config.h needs to be included 1st
- // TODO this thingy looks like hack , but its not, need to
- // make separate header however, because It makes mess here.
+// config.h needs to be included 1st
+// TODO this thingy looks like hack , but its not, need to
+// make separate header however, because It makes mess here.
 #ifdef HAVE_CONFIG_H
 // Remove Some things that we will define
 // This is in case including another config.h
@@ -63,16 +63,6 @@
 
 #include "Define.h"
 
-#if COMPILER == COMPILER_MICROSOFT
-#ifndef __SHOW_STUPID_WARNINGS__
-#   pragma warning(disable:4018)                            // 'expression' : signed/unsigned mismatch
-#   pragma warning(disable:4305)                            // 'identifier' : truncation from 'type1' to 'type2'
-#   pragma warning(disable:4311)                            // 'variable' : pointer truncation from 'type' to 'type'
-#   pragma warning(disable:4800)                            // 'type' : forcing value to bool 'true' or 'false' (performance warning)
-#   pragma warning(disable:4522)                            //warning when class has 2 constructors
-#endif                                                      // __SHOW_STUPID_WARNINGS__
-#endif
-
 #include "Dynamic/UnorderedMap.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,17 +75,17 @@
 
 #if PLATFORM == PLATFORM_WINDOWS
 #define STRCASECMP stricmp
-#define stricmp _stricmp
-#define putenv _putenv
-#define access _access
-#define chdir _chdir
-#define rmdir _rmdir
-#define getcwd _getcwd
-#define swab _swab
-#define unlnk _unlink
-#define mkdir _mkdir
-#define tempnam _tempnam
-#define strdup _strdup
+#define stricmp _stricmp        
+#define putenv _putenv      
+#define access _access      
+#define chdir _chdir        
+#define rmdir _rmdir        
+#define getcwd _getcwd      
+#define swab _swab      
+#define unlnk _unlink       
+#define mkdir _mkdir        
+#define tempnam _tempnam        
+#define strdup _strdup      
 #define fdopen _fdopen
 #else
 #define STRCASECMP strcasecmp
@@ -179,13 +169,13 @@ inline float finiteAlways(float f) { return finite(f) ? f : 0.0f; }
 
 enum TimeConstants
 {
-	MINUTE = 60,
-	HOUR = MINUTE * 60,
-	DAY = HOUR * 24,
-	WEEK = DAY * 7,
-	MONTH = DAY * 30,
-	YEAR = MONTH * 12,
-	IN_MILLISECONDS = 1000
+    MINUTE = 60,
+    HOUR   = MINUTE*60,
+    DAY    = HOUR*24,
+    WEEK   = DAY*7,
+    MONTH  = DAY*30,
+    YEAR   = MONTH*12,
+    IN_MILLISECONDS = 1000
 };
 
 enum AccountTypes
@@ -199,15 +189,15 @@ enum AccountTypes
 
 enum LocaleConstant
 {
-	LOCALE_enUS = 0,                                        // also enGB
-	LOCALE_koKR = 1,
-	LOCALE_frFR = 2,
-	LOCALE_deDE = 3,
-	LOCALE_zhCN = 4,
-	LOCALE_zhTW = 5,
-	LOCALE_esES = 6,
-	LOCALE_esMX = 7,
-	LOCALE_ruRU = 8
+    LOCALE_enUS = 0,                                        // also enGB
+    LOCALE_koKR = 1,
+    LOCALE_frFR = 2,
+    LOCALE_deDE = 3,
+    LOCALE_zhCN = 4,
+    LOCALE_zhTW = 5,
+    LOCALE_esES = 6,
+    LOCALE_esMX = 7,
+    LOCALE_ruRU = 8
 };
 
 const uint8 TOTAL_LOCALES = 9;
@@ -226,7 +216,7 @@ LocaleConstant GetLocaleByName(const std::string& name);
 #endif
 
 #ifndef M_PI
-#define M_PI            3.14159265358979323846f
+#define M_PI            3.14159265358979323846
 #endif
 
 #define SKYFIRE_GUARD(MUTEX, LOCK) \
@@ -242,3 +232,4 @@ LocaleConstant GetLocaleByName(const std::string& name);
     if (SKYFIRE_GUARD_OBJECT.locked() == 0) ASSERT(false);
 
 #endif
+

@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2011-2017 Project SkyFire <http://www.projectskyfire.org/>
- * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2010-2017 Oregon <http://www.oregoncore.com/>
- * Copyright (C) 2005-2017 MaNGOS <https://www.getmangos.eu/>
+ * Copyright (C) 2010-2012 Project SkyFire <http://www.projectskyfire.org/>
+ * Copyright (C) 2010-2012 Oregon <http://www.oregoncore.com/>
+ * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2012 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 3 of the License, or (at your
+ * Free Software Foundation; either version 2 of the License, or (at your
  * option) any later version.
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
@@ -17,25 +17,6 @@
  * You should have received a copy of the GNU General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
- /*
-  * Copyright (C) 2010-2012 Project SkyFire <http://www.projectskyfire.org/>
-  * Copyright (C) 2010-2012 Oregon <http://www.oregoncore.com/>
-  * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
-  * Copyright (C) 2005-2012 MaNGOS <http://getmangos.com/>
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms of the GNU General Public License as published by the
-  * Free Software Foundation; either version 2 of the License, or (at your
-  * option) any later version.
-  *
-  * This program is distributed in the hope that it will be useful, but WITHOUT
-  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
-  * more details.
-  *
-  * You should have received a copy of the GNU General Public License along
-  * with this program. If not, see <http://www.gnu.org/licenses/>.
-  */
 
 #ifndef SC_PLAYER_H
 #define SC_PLAYER_H
@@ -44,7 +25,7 @@
 #include "GossipDef.h"
 #include "QuestDef.h"
 
-  // Gossip Item Text
+// Gossip Item Text
 #define GOSSIP_TEXT_BROWSE_GOODS        "I'd like to browse your goods."
 #define GOSSIP_TEXT_TRAIN               "Train me!"
 
@@ -218,3 +199,4 @@ extern uint32 GetSkillLevel(Player* player, uint32 skill);
 
 #define QUEST_DIALOG_STATUS(a, b, c)   GetSession()->getDialogStatus(a, b, c)
 #endif
+

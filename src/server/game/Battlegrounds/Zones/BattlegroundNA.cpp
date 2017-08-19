@@ -29,17 +29,17 @@
 
 BattlegroundNA::BattlegroundNA()
 {
-	m_BgObjects.resize(BG_NA_OBJECT_MAX);
+    m_BgObjects.resize(BG_NA_OBJECT_MAX);
 
-	m_StartDelayTimes[BG_STARTING_EVENT_FIRST] = BG_START_DELAY_1M;
-	m_StartDelayTimes[BG_STARTING_EVENT_SECOND] = BG_START_DELAY_30S;
-	m_StartDelayTimes[BG_STARTING_EVENT_THIRD] = BG_START_DELAY_15S;
-	m_StartDelayTimes[BG_STARTING_EVENT_FOURTH] = BG_START_DELAY_NONE;
-	//we must set messageIds
-	m_StartMessageIds[BG_STARTING_EVENT_FIRST] = LANG_ARENA_ONE_MINUTE;
-	m_StartMessageIds[BG_STARTING_EVENT_SECOND] = LANG_ARENA_THIRTY_SECONDS;
-	m_StartMessageIds[BG_STARTING_EVENT_THIRD] = LANG_ARENA_FIFTEEN_SECONDS;
-	m_StartMessageIds[BG_STARTING_EVENT_FOURTH] = LANG_ARENA_HAS_BEGUN;
+    m_StartDelayTimes[BG_STARTING_EVENT_FIRST]  = BG_START_DELAY_1M;
+    m_StartDelayTimes[BG_STARTING_EVENT_SECOND] = BG_START_DELAY_30S;
+    m_StartDelayTimes[BG_STARTING_EVENT_THIRD]  = BG_START_DELAY_15S;
+    m_StartDelayTimes[BG_STARTING_EVENT_FOURTH] = BG_START_DELAY_NONE;
+    //we must set messageIds
+    m_StartMessageIds[BG_STARTING_EVENT_FIRST]  = LANG_ARENA_ONE_MINUTE;
+    m_StartMessageIds[BG_STARTING_EVENT_SECOND] = LANG_ARENA_THIRTY_SECONDS;
+    m_StartMessageIds[BG_STARTING_EVENT_THIRD]  = LANG_ARENA_FIFTEEN_SECONDS;
+    m_StartMessageIds[BG_STARTING_EVENT_FOURTH] = LANG_ARENA_HAS_BEGUN;
 }
 
 BattlegroundNA::~BattlegroundNA()
@@ -48,99 +48,99 @@ BattlegroundNA::~BattlegroundNA()
 
 void BattlegroundNA::Update(time_t diff)
 {
-	Battleground::Update(diff);
+    Battleground::Update(diff);
 }
 
 void BattlegroundNA::StartingEventCloseDoors()
 {
-	for (uint32 i = BG_NA_OBJECT_DOOR_1; i <= BG_NA_OBJECT_DOOR_4; ++i)
-		SpawnBGObject(i, RESPAWN_IMMEDIATELY);
+    for (uint32 i = BG_NA_OBJECT_DOOR_1; i <= BG_NA_OBJECT_DOOR_4; ++i)
+        SpawnBGObject(i, RESPAWN_IMMEDIATELY);
 }
 
 void BattlegroundNA::StartingEventOpenDoors()
 {
-	for (uint32 i = BG_NA_OBJECT_DOOR_1; i <= BG_NA_OBJECT_DOOR_2; ++i)
-		DoorOpen(i);
+    for (uint32 i = BG_NA_OBJECT_DOOR_1; i <= BG_NA_OBJECT_DOOR_2; ++i)
+        DoorOpen(i);
 
-	for (uint32 i = BG_NA_OBJECT_BUFF_1; i <= BG_NA_OBJECT_BUFF_2; ++i)
-		SpawnBGObject(i, 60);
+    for (uint32 i = BG_NA_OBJECT_BUFF_1; i <= BG_NA_OBJECT_BUFF_2; ++i)
+        SpawnBGObject(i, 60);
 }
 
 void BattlegroundNA::AddPlayer(Player *plr)
 {
-	Battleground::AddPlayer(plr);
-	//create score and add it to map, default values are set in constructor
-	BattlegroundNAScore* sc = new BattlegroundNAScore;
+    Battleground::AddPlayer(plr);
+    //create score and add it to map, default values are set in constructor
+    BattlegroundNAScore* sc = new BattlegroundNAScore;
 
-	m_PlayerScores[plr->GetGUID()] = sc;
+    m_PlayerScores[plr->GetGUID()] = sc;
 
-	UpdateWorldState(0xa0f, GetAlivePlayersCountByTeam(ALLIANCE));
-	UpdateWorldState(0xa10, GetAlivePlayersCountByTeam(HORDE));
+    UpdateWorldState(0xa0f, GetAlivePlayersCountByTeam(ALLIANCE));
+    UpdateWorldState(0xa10, GetAlivePlayersCountByTeam(HORDE));
 }
 
 void BattlegroundNA::RemovePlayer(Player* /*plr*/, uint64 /*guid*/)
 {
-	if (GetStatus() == STATUS_WAIT_LEAVE)
-		return;
+    if (GetStatus() == STATUS_WAIT_LEAVE)
+        return;
 
-	UpdateWorldState(0xa0f, GetAlivePlayersCountByTeam(ALLIANCE));
-	UpdateWorldState(0xa10, GetAlivePlayersCountByTeam(HORDE));
+    UpdateWorldState(0xa0f, GetAlivePlayersCountByTeam(ALLIANCE));
+    UpdateWorldState(0xa10, GetAlivePlayersCountByTeam(HORDE));
 
-	CheckArenaWinConditions();
+    CheckArenaWinConditions();
 }
 
 void BattlegroundNA::HandleKillPlayer(Player* player, Player* killer)
 {
-	if (GetStatus() != STATUS_IN_PROGRESS)
-		return;
+    if (GetStatus() != STATUS_IN_PROGRESS)
+        return;
 
-	if (!killer)
-	{
-		sLog->outError("BattlegroundNA: Killer player not found");
-		return;
-	}
+    if (!killer)
+    {
+        sLog->outError("BattlegroundNA: Killer player not found");
+        return;
+    }
 
-	Battleground::HandleKillPlayer(player, killer);
+    Battleground::HandleKillPlayer(player, killer);
 
-	UpdateWorldState(0xa0f, GetAlivePlayersCountByTeam(ALLIANCE));
-	UpdateWorldState(0xa10, GetAlivePlayersCountByTeam(HORDE));
+    UpdateWorldState(0xa0f, GetAlivePlayersCountByTeam(ALLIANCE));
+    UpdateWorldState(0xa10, GetAlivePlayersCountByTeam(HORDE));
 
-	CheckArenaWinConditions();
+    CheckArenaWinConditions();
 }
 
 bool BattlegroundNA::HandlePlayerUnderMap(Player* player)
 {
-	player->TeleportTo(GetMapId(), 4055.504395f, 2919.660645f, 13.611241f, player->GetOrientation(), false);
-	return true;
+    player->TeleportTo(GetMapId(), 4055.504395, 2919.660645, 13.611241, player->GetOrientation(), false);
+    return true;
 }
 
 void BattlegroundNA::HandleAreaTrigger(Player *Source, uint32 Trigger)
 {
-	if (GetStatus() != STATUS_IN_PROGRESS)
-		return;
+    if (GetStatus() != STATUS_IN_PROGRESS)
+        return;
 
-	//uint32 SpellId = 0;
-	//uint64 buff_guid = 0;
-	switch (Trigger)
-	{
-	case 4536:                                          // buff trigger?
-	case 4537:                                          // buff trigger?
-		break;
-	default:
-		sLog->outError("WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
-		Source->GetSession()->SendAreaTriggerMessage("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);
-		break;
-	}
+    //uint32 SpellId = 0;
+    //uint64 buff_guid = 0;
+    switch (Trigger)
+    {
+        case 4536:                                          // buff trigger?
+        case 4537:                                          // buff trigger?
+            break;
+        default:
+            sLog->outError("WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
+            Source->GetSession()->SendAreaTriggerMessage("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);
+            break;
+    }
 
-	//if (buff_guid)
-	//    HandleTriggerBuff(buff_guid, Source);
+    //if (buff_guid)
+    //    HandleTriggerBuff(buff_guid, Source);
 }
 
 void BattlegroundNA::FillInitialWorldStates(WorldPacket &data)
 {
-	data << uint32(0xa0f) << uint32(GetAlivePlayersCountByTeam(ALLIANCE));           // 7
-	data << uint32(0xa10) << uint32(GetAlivePlayersCountByTeam(HORDE));           // 8
-	data << uint32(0xa11) << uint32(1);           // 9
+    data << uint32(0xa0f) << uint32(GetAlivePlayersCountByTeam(ALLIANCE));           // 7
+    data << uint32(0xa10) << uint32(GetAlivePlayersCountByTeam(HORDE));           // 8
+    data << uint32(0xa11) << uint32(1);           // 9
 }
 
 void BattlegroundNA::ResetBGSubclass()
@@ -149,20 +149,20 @@ void BattlegroundNA::ResetBGSubclass()
 
 bool BattlegroundNA::SetupBattleground()
 {
-	// gates
-	if (!AddObject(BG_NA_OBJECT_DOOR_1, BG_NA_OBJECT_TYPE_DOOR_1, 4031.854f, 2966.833f, 12.6462f, -2.648788f, 0, 0, 0.9697962f, -0.2439165f, RESPAWN_IMMEDIATELY)
-		|| !AddObject(BG_NA_OBJECT_DOOR_2, BG_NA_OBJECT_TYPE_DOOR_2, 4081.179f, 2874.97f, 12.39171f, 0.4928045f, 0, 0, 0.2439165f, 0.9697962f, RESPAWN_IMMEDIATELY)
-		|| !AddObject(BG_NA_OBJECT_DOOR_3, BG_NA_OBJECT_TYPE_DOOR_3, 4023.709f, 2981.777f, 10.70117f, -2.648788f, 0, 0, 0.9697962f, -0.2439165f, RESPAWN_IMMEDIATELY)
-		|| !AddObject(BG_NA_OBJECT_DOOR_4, BG_NA_OBJECT_TYPE_DOOR_4, 4090.064f, 2858.438f, 10.23631f, 0.4928045f, 0, 0, 0.2439165f, 0.9697962f, RESPAWN_IMMEDIATELY)
-		// buffs
-		|| !AddObject(BG_NA_OBJECT_BUFF_1, BG_NA_OBJECT_TYPE_BUFF_1, 4009.189941f, 2895.250000f, 13.052700f, -1.448624f, 0, 0, 0.6626201f, -0.7489557f, 120)
-		|| !AddObject(BG_NA_OBJECT_BUFF_2, BG_NA_OBJECT_TYPE_BUFF_2, 4103.330078f, 2946.350098f, 13.051300f, -0.06981307f, 0, 0, 0.03489945f, -0.9993908f, 120))
-	{
-		sLog->outErrorDb("BatteGroundNA: Failed to spawn some object!");
-		return false;
-	}
+    // gates
+    if (  !AddObject(BG_NA_OBJECT_DOOR_1, BG_NA_OBJECT_TYPE_DOOR_1, 4031.854, 2966.833, 12.6462, -2.648788, 0, 0, 0.9697962, -0.2439165, RESPAWN_IMMEDIATELY)
+        || !AddObject(BG_NA_OBJECT_DOOR_2, BG_NA_OBJECT_TYPE_DOOR_2, 4081.179, 2874.97, 12.39171, 0.4928045, 0, 0, 0.2439165, 0.9697962, RESPAWN_IMMEDIATELY)
+        || !AddObject(BG_NA_OBJECT_DOOR_3, BG_NA_OBJECT_TYPE_DOOR_3, 4023.709, 2981.777, 10.70117, -2.648788, 0, 0, 0.9697962, -0.2439165, RESPAWN_IMMEDIATELY)
+        || !AddObject(BG_NA_OBJECT_DOOR_4, BG_NA_OBJECT_TYPE_DOOR_4, 4090.064, 2858.438, 10.23631, 0.4928045, 0, 0, 0.2439165, 0.9697962, RESPAWN_IMMEDIATELY)
+    // buffs
+        || !AddObject(BG_NA_OBJECT_BUFF_1, BG_NA_OBJECT_TYPE_BUFF_1, 4009.189941, 2895.250000, 13.052700, -1.448624, 0, 0, 0.6626201, -0.7489557, 120)
+        || !AddObject(BG_NA_OBJECT_BUFF_2, BG_NA_OBJECT_TYPE_BUFF_2, 4103.330078, 2946.350098, 13.051300, -0.06981307, 0, 0, 0.03489945, -0.9993908, 120))
+    {
+        sLog->outErrorDb("BatteGroundNA: Failed to spawn some object!");
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 /*
@@ -174,3 +174,4 @@ bool BattlegroundNA::SetupBattleground()
 0040: 00 00 00 00 00 00 d5 08 00 00 00 00 00 00 d3 08  |  ................
 0050: 00 00 00 00 00 00                                |  ......
 */
+

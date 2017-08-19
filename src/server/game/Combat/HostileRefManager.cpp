@@ -26,7 +26,7 @@
 
 HostileRefManager::~HostileRefManager()
 {
-	deleteReferences();
+    deleteReferences();
 }
 
 //=================================================
@@ -36,33 +36,33 @@ HostileRefManager::~HostileRefManager()
 
 void HostileRefManager::threatAssist(Unit *pVictim, float pThreat, SpellEntry const *pThreatSpell, bool pSingleTarget)
 {
-	HostileReference* ref;
+    HostileReference* ref;
 
-	uint32 size = pSingleTarget ? 1 : getSize();            // if pSingleTarget do not devide threat
-	ref = getFirst();
-	while (ref != NULL)
-	{
-		float threat = ThreatCalcHelper::calcThreat(pVictim, iOwner, pThreat, (pThreatSpell ? GetSpellSchoolMask(pThreatSpell) : SPELL_SCHOOL_MASK_NORMAL), pThreatSpell);
-		if (pVictim == getOwner())
-			ref->addThreat(float(threat) / size);          // It is faster to modify the threat durectly if possible
-		else
-			ref->getSource()->addThreat(pVictim, float(threat) / size);
-		ref = ref->next();
-	}
+    uint32 size = pSingleTarget ? 1 : getSize();            // if pSingleTarget do not devide threat
+    ref = getFirst();
+    while (ref != NULL)
+    {
+        float threat = ThreatCalcHelper::calcThreat(pVictim, iOwner, pThreat, (pThreatSpell ? GetSpellSchoolMask(pThreatSpell) : SPELL_SCHOOL_MASK_NORMAL), pThreatSpell);
+        if (pVictim == getOwner())
+            ref->addThreat(float (threat) / size);          // It is faster to modify the threat durectly if possible
+        else
+            ref->getSource()->addThreat(pVictim, float (threat) / size);
+        ref = ref->next();
+    }
 }
 
 //=================================================
 
 void HostileRefManager::addThreatPercent(int32 pValue)
 {
-	HostileReference* ref;
+    HostileReference* ref;
 
-	ref = getFirst();
-	while (ref != NULL)
-	{
-		ref->addThreatPercent(pValue);
-		ref = ref->next();
-	}
+    ref = getFirst();
+    while (ref != NULL)
+    {
+        ref->addThreatPercent(pValue);
+        ref = ref->next();
+    }
 }
 
 //=================================================
@@ -70,14 +70,14 @@ void HostileRefManager::addThreatPercent(int32 pValue)
 
 void HostileRefManager::setOnlineOfflineState(bool pIsOnline)
 {
-	HostileReference* ref;
+    HostileReference* ref;
 
-	ref = getFirst();
-	while (ref != NULL)
-	{
-		ref->setOnlineOfflineState(pIsOnline);
-		ref = ref->next();
-	}
+    ref = getFirst();
+    while (ref != NULL)
+    {
+        ref->setOnlineOfflineState(pIsOnline);
+        ref = ref->next();
+    }
 }
 
 //=================================================
@@ -85,12 +85,12 @@ void HostileRefManager::setOnlineOfflineState(bool pIsOnline)
 
 void HostileRefManager::updateThreatTables()
 {
-	HostileReference* ref = getFirst();
-	while (ref)
-	{
-		ref->updateOnlineStatus();
-		ref = ref->next();
-	}
+    HostileReference* ref = getFirst();
+    while (ref)
+    {
+        ref->updateOnlineStatus();
+        ref = ref->next();
+    }
 }
 
 //=================================================
@@ -99,14 +99,14 @@ void HostileRefManager::updateThreatTables()
 
 void HostileRefManager::deleteReferences()
 {
-	HostileReference* ref = getFirst();
-	while (ref)
-	{
-		HostileReference* nextRef = ref->next();
-		ref->removeReference();
-		delete ref;
-		ref = nextRef;
-	}
+    HostileReference* ref = getFirst();
+    while (ref)
+    {
+        HostileReference* nextRef = ref->next();
+        ref->removeReference();
+        delete ref;
+        ref = nextRef;
+    }
 }
 
 //=================================================
@@ -114,18 +114,18 @@ void HostileRefManager::deleteReferences()
 
 void HostileRefManager::deleteReference(Unit *creature)
 {
-	HostileReference* ref = getFirst();
-	while (ref)
-	{
-		HostileReference* nextRef = ref->next();
-		if (ref->getSource()->getOwner() == creature)
-		{
-			ref->removeReference();
-			delete ref;
-			break;
-		}
-		ref = nextRef;
-	}
+    HostileReference* ref = getFirst();
+    while (ref)
+    {
+        HostileReference* nextRef = ref->next();
+        if (ref->getSource()->getOwner() == creature)
+        {
+            ref->removeReference();
+            delete ref;
+            break;
+        }
+        ref = nextRef;
+    }
 }
 
 //=================================================
@@ -133,17 +133,18 @@ void HostileRefManager::deleteReference(Unit *creature)
 
 void HostileRefManager::setOnlineOfflineState(Unit *creature, bool pIsOnline)
 {
-	HostileReference* ref = getFirst();
-	while (ref)
-	{
-		HostileReference* nextRef = ref->next();
-		if (ref->getSource()->getOwner() == creature)
-		{
-			ref->setOnlineOfflineState(pIsOnline);
-			break;
-		}
-		ref = nextRef;
-	}
+    HostileReference* ref = getFirst();
+    while (ref)
+    {
+        HostileReference* nextRef = ref->next();
+        if (ref->getSource()->getOwner() == creature)
+        {
+            ref->setOnlineOfflineState(pIsOnline);
+            break;
+        }
+        ref = nextRef;
+    }
 }
 
 //=================================================
+

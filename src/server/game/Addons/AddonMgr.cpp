@@ -38,50 +38,50 @@ AddonMgr::~AddonMgr()
 
 void AddonMgr::LoadFromDB()
 {
-	QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT name, crc FROM addons");
-	if (!result)
-	{
-		sLog->outErrorDb("The table `addons` is empty");
-		return;
-	}
+    QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT name, crc FROM addons");
+    if (!result)
+    {
+        sLog->outErrorDb("The table `addons` is empty");
+        return;
+    }
 
-	uint32 count = 0;
-	Field *fields;
+    uint32 count = 0;
+    Field *fields;
 
-	do
-	{
-		fields = result->Fetch();
-		count++;
+    do
+    {
+        fields = result->Fetch();
+        count++;
 
-		std::string name = fields[0].GetCppString();
-		uint32 crc = fields[1].GetUInt32();
+        std::string name = fields[0].GetCppString();
+        uint32 crc = fields[1].GetUInt32();
 
-		SavedAddon addon(name, crc);
-		m_knownAddons.push_back(addon);
-	} while (result->NextRow());
+        SavedAddon addon(name, crc);
+        m_knownAddons.push_back(addon);
+    } while (result->NextRow());
 
-	sLog->outString();
-	sLog->outString(">> Loaded %u known addons", count);
+    sLog->outString();
+    sLog->outString(">> Loaded %u known addons", count);
 }
 
 void AddonMgr::SaveAddon(AddonInfo const& addon)
 {
-	std::string name = addon.Name;
-	CharacterDatabase.EscapeString(name);
-	CharacterDatabase.PExecute("INSERT INTO addons (name, crc) VALUES ('%s', %u)", name.c_str(), addon.CRC);
+    std::string name = addon.Name;
+    CharacterDatabase.EscapeString(name);
+    CharacterDatabase.PExecute("INSERT INTO addons (name, crc) VALUES ('%s', %u)", name.c_str(), addon.CRC);
 
-	SavedAddon newAddon(addon.Name, addon.CRC);
-	m_knownAddons.push_back(newAddon);
+    SavedAddon newAddon(addon.Name, addon.CRC);
+    m_knownAddons.push_back(newAddon);
 }
 
 SavedAddon const* AddonMgr::GetAddonInfo(const std::string& name) const
 {
-	for (SavedAddonsList::const_iterator it = m_knownAddons.begin(); it != m_knownAddons.end(); ++it)
-	{
-		SavedAddon const& addon = (*it);
-		if (addon.Name == name)
-			return &addon;
-	}
+    for (SavedAddonsList::const_iterator it = m_knownAddons.begin(); it != m_knownAddons.end(); ++it)
+    {
+        SavedAddon const& addon = (*it);
+        if (addon.Name == name)
+            return &addon;
+    }
 
-	return NULL;
+    return NULL;
 }
