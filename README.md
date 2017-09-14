@@ -12,7 +12,7 @@ our site linked below or make pull requests to our BitBucket repo at
 https://bitbucket.org/EMPulseGaming/skyfire_one
 
 ## Supported Client Version
-**TBC 2.4.3 Build 8606**
+[**TBC 2.4.3 Build 8606**](http://depfile.us/IU7MTzTYsMnG)
 
 ## Requirements
 + Platform: Linux, Windows or Mac
@@ -41,7 +41,7 @@ prevent duplicates.
 
 Fixes are submitted as pull requests via BitBucket.
 
-## Authors &amp; Contributors
+## Authors & Contributors
 
 Read file [THANKS](https://github.com/ProjectSkyfire/SkyFireEMU/tree/master/doc/THANKS.md)
 
@@ -50,7 +50,7 @@ Read file [THANKS](https://github.com/ProjectSkyfire/SkyFireEMU/tree/master/doc/
 For further information on the Project SkyFireEMU, please visit our
 project website at Forum [Project SkyFire](http://www.projectskyfire.org)
 
-Database [SF1DB Release v1.0.0](https://www.projectskyfire.org/index.php?/files/file/28-skyfireone-db-release/)
+Database [SF1DB Release v0.0.3](https://www.projectskyfire.org/index.php?/files/file/28-skyfireone-db-release/)
 
 For further information on the TrinityCore project, please visit the
 project website at Forum [TrinityCore](http://www.TrinityCore.org)
