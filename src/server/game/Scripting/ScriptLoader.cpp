@@ -43,7 +43,6 @@ void AddSC_npc_professions();
 void AddSC_npc_innkeeper();
 void AddSC_npcs_special();
 void AddSC_npc_taxi();
-//void AddSC_achievement_scripts();
 //void AddSC_npc_mount();                      // npc mount
 
 //eastern kingdoms
@@ -412,7 +411,7 @@ void AddSC_npc_taxi();
 // battlegrounds
 
 // outdoor pvp
-//void AddSC_outdoorpvp_ep();
+void AddSC_outdoorpvp_ep();
 //void AddSC_outdoorpvp_hp();
 //void AddSC_outdoorpvp_na();
 //void AddSC_outdoorpvp_si();
@@ -850,7 +849,7 @@ void AddOutlandScripts()
 void AddOutdoorPvPScripts()
 {
 #ifdef SCRIPTS
-    //AddSC_outdoorpvp_ep();
+    AddSC_outdoorpvp_ep();
     //AddSC_outdoorpvp_hp();
     //AddSC_outdoorpvp_na();
     //AddSC_outdoorpvp_si();
