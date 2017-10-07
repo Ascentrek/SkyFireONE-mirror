@@ -31,19 +31,18 @@
 
 #ifdef SCRIPTS
 //world
-//void AddSC_boss_emeriss();
-//void AddSC_boss_taerar();
-//void AddSC_boss_ysondre();
-//void AddSC_generic_creature();
-//void AddSC_areatrigger_scripts();
-//void AddSC_go_scripts();
-//void AddSC_guards();
-//void AddSC_item_scripts();
-//void AddSC_npc_professions();
-//void AddSC_npc_innkeeper();
-//void AddSC_npcs_special();
-//void AddSC_npc_taxi();
-//void AddSC_achievement_scripts();
+void AddSC_boss_emeriss();
+void AddSC_boss_taerar();
+void AddSC_boss_ysondre();
+void AddSC_generic_creature();
+void AddSC_areatrigger_scripts();
+void AddSC_go_scripts();
+void AddSC_guards();
+void AddSC_item_scripts();
+void AddSC_npc_professions();
+void AddSC_npc_innkeeper();
+void AddSC_npcs_special();
+void AddSC_npc_taxi();
 //void AddSC_npc_mount();                      // npc mount
 
 //eastern kingdoms
@@ -412,12 +411,12 @@
 // battlegrounds
 
 // outdoor pvp
-//void AddSC_outdoorpvp_ep();
-//void AddSC_outdoorpvp_hp();
-//void AddSC_outdoorpvp_na();
-//void AddSC_outdoorpvp_si();
-//void AddSC_outdoorpvp_tf();
-//void AddSC_outdoorpvp_zm();
+void AddSC_outdoorpvp_ep();
+void AddSC_outdoorpvp_hp();
+void AddSC_outdoorpvp_na();
+void AddSC_outdoorpvp_si();
+void AddSC_outdoorpvp_tf();
+void AddSC_outdoorpvp_zm();
 
 // player
 //void AddSC_chat_log();
@@ -455,18 +454,18 @@ void AddSpellScripts()
 void AddWorldScripts()
 {
 #ifdef SCRIPTS
-    //AddSC_boss_emeriss();
-    //AddSC_boss_taerar();
-    //AddSC_boss_ysondre();
-    //AddSC_generic_creature();
-    //AddSC_areatrigger_scripts();	
-    //AddSC_go_scripts();
-    //AddSC_guards();
-    //AddSC_item_scripts();
-    //AddSC_npc_professions();
-    //AddSC_npc_innkeeper();
-    //AddSC_npcs_special();
-    //AddSC_npc_taxi();
+    AddSC_boss_emeriss();
+    AddSC_boss_taerar();
+    AddSC_boss_ysondre();
+    AddSC_generic_creature();
+    AddSC_areatrigger_scripts();	
+    AddSC_go_scripts();
+    AddSC_guards();
+    AddSC_item_scripts();
+    AddSC_npc_professions();
+    AddSC_npc_innkeeper();
+    AddSC_npcs_special();
+    AddSC_npc_taxi();
     //AddSC_npc_mount();                      // npc mount
     //AddSC_chat_log();
 #endif
@@ -850,12 +849,12 @@ void AddOutlandScripts()
 void AddOutdoorPvPScripts()
 {
 #ifdef SCRIPTS
-    //AddSC_outdoorpvp_ep();
-    //AddSC_outdoorpvp_hp();
-    //AddSC_outdoorpvp_na();
-    //AddSC_outdoorpvp_si();
-    //AddSC_outdoorpvp_tf();
-    //AddSC_outdoorpvp_zm();
+    AddSC_outdoorpvp_ep();
+    AddSC_outdoorpvp_hp();
+    AddSC_outdoorpvp_na();
+    AddSC_outdoorpvp_si();
+    AddSC_outdoorpvp_tf();
+    AddSC_outdoorpvp_zm();
 #endif
 }
 

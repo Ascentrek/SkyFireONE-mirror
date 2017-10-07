@@ -29,18 +29,16 @@ namespace Skyfire
 {
     namespace Honor
     {
-        inline float hk_honor_at_level_f(uint8 level, uint32 count = 1)
+        inline float hk_honor_at_level_f(uint8 level, float multiplier = 1.0f)
         {
-            float honor = count * level * 1.55f;
-            sScriptMgr->OnHonorCalculation(honor, level, count);
+            float honor = multiplier * level * 1.55f;
+            sScriptMgr->OnHonorCalculation(honor, level, multiplier);
             return honor;
         }
-        
-        inline uint32 hk_honor_at_level(uint8 level, uint32 count = 1)
+
+        inline uint32 hk_honor_at_level(uint8 level, float multiplier = 1.0f)
         {
-            uint32 honor = ceil(hk_honor_at_level_f(level, count));
-            sScriptMgr->OnHonorCalculation(honor, level, count);
-            return honor;
+            return uint32(ceil(hk_honor_at_level_f(level, multiplier)));
         }
     }
     namespace XP
@@ -58,7 +56,7 @@ namespace Skyfire
             else
                 level = pl_level - 9;
 
-            sScriptMgr->OnGetGrayLevel(level, pl_level);
+            sScriptMgr->OnGrayLevelCalculation(level, pl_level);
             return level;
         }
 
@@ -77,7 +75,7 @@ namespace Skyfire
             else
                 color = XP_GRAY;
 
-            sScriptMgr->OnGetColorCode(color, pl_level, mob_level);
+            sScriptMgr->OnColorCodeCalculation(color, pl_level, mob_level);
             return color;
         }
 
@@ -152,7 +150,7 @@ namespace Skyfire
                     baseGain = 0;
             }
 
-            sScriptMgr->OnGetBaseGain(baseGain, pl_level, mob_level, content);
+            sScriptMgr->OnBaseGainCalculation(baseGain, pl_level, mob_level, content);
             return baseGain;
         }
 
@@ -179,7 +177,7 @@ namespace Skyfire
             }
 
             gain *= sWorld->getRate(RATE_XP_KILL);
-            sScriptMgr->OnGetGain(gain, pl, u);
+            sScriptMgr->OnGainCalculation(gain, pl, u);
             return gain;
         }
 
@@ -210,7 +208,7 @@ namespace Skyfire
                 }
             }
 
-            sScriptMgr->OnGetGroupRate(rate, count, isRaid);
+            sScriptMgr->OnGroupRateCalculation(rate, count, isRaid);
             return rate;
         }
     }

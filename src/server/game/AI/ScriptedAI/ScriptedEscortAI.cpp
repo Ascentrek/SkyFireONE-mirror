@@ -410,17 +410,15 @@ void npc_escortAI::AddWaypoint(uint32 id, float x, float y, float z, uint32 Wait
 
 void npc_escortAI::FillPointMovementListForCreature()
 {
-    std::vector<ScriptPointMove> const &pPointsEntries = sScriptSystemMgr.GetPointMoveList(me->GetEntry());
-
-    if (pPointsEntries.empty())
+    ScriptPointVector const& movePoints = sScriptSystemMgr->GetPointMoveList(me->GetEntry());
+    if (movePoints.empty())
         return;
 
-    std::vector<ScriptPointMove>::const_iterator itr;
-
-    for (itr = pPointsEntries.begin(); itr != pPointsEntries.end(); ++itr)
+    ScriptPointVector::const_iterator itrEnd = movePoints.end();;
+    for (ScriptPointVector::const_iterator itr = movePoints.begin(); itr != itrEnd; ++itr)
     {
-        Escort_Waypoint pPoint(itr->uiPointId, itr->fX, itr->fY, itr->fZ, itr->uiWaitTime);
-        WaypointList.push_back(pPoint);
+        Escort_Waypoint point(itr->uiPointId, itr->fX, itr->fY, itr->fZ, itr->uiWaitTime);
+        WaypointList.push_back(point);
     }
 }
 

@@ -62,17 +62,6 @@
 #endif //HAVE_CONFIG_H
 
 #include "Define.h"
-
-#if COMPILER == COMPILER_MICROSOFT
-#ifndef __SHOW_STUPID_WARNINGS__
-#   pragma warning(disable:4018)                            // 'expression' : signed/unsigned mismatch
-#   pragma warning(disable:4305)                            // 'identifier' : truncation from 'type1' to 'type2'
-#   pragma warning(disable:4311)                            // 'variable' : pointer truncation from 'type' to 'type'
-#   pragma warning(disable:4800)                            // 'type' : forcing value to bool 'true' or 'false' (performance warning)
-#   pragma warning(disable:4522)                            //warning when class has 2 constructors
-#endif                                                      // __SHOW_STUPID_WARNINGS__
-#endif
-
 #include "Dynamic/UnorderedMap.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -215,6 +204,8 @@ const uint8 TOTAL_LOCALES = 9;
 extern char const* localeNames[TOTAL_LOCALES];
 
 LocaleConstant GetLocaleByName(const std::string& name);
+
+typedef std::vector<std::string> StringVector;
 
 // we always use stdlibc++ std::max/std::min, undefine some not C++ standard defines (Win API and some other platforms)
 #ifdef max
