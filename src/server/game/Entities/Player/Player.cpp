@@ -14246,14 +14246,17 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     if (money > MAX_MONEY_AMOUNT)
         money = MAX_MONEY_AMOUNT;
     SetMoney(money);
-
+	
+    // PLAYER_BYTES   (skin,face,hairStyle,hairColor)
+	// PLAYER_BYTES_2 (facailHair)
+	// PLAYER_BYTES_3 (gender)
     SetUInt32Value(PLAYER_BYTES, fields[9].GetUInt32());
     SetUInt32Value(PLAYER_BYTES_2, fields[10].GetUInt32());
-    SetUInt32Value(PLAYER_BYTES_3, (fields[48].GetUInt16() & 0xFFFE) | fields[5].GetUInt8()); //check player_bytes_3
+    SetUInt32Value(PLAYER_BYTES_3, (fields[48].GetUInt16() & 0xFFFE) | fields[5].GetUInt8());
     SetUInt32Value(PLAYER_FLAGS, fields[11].GetUInt32());
     SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[48].GetUInt32());
 
-    SetUInt64Value(PLAYER_FIELD_KNOWN_CURRENCIES, fields[47].GetUInt64());   //check this
+    SetUInt64Value(PLAYER_FIELD_KNOWN_CURRENCIES, fields[47].GetUInt64());
     
     SetUInt32Value(PLAYER_AMMO_ID, fields[59].GetUInt32());
 
