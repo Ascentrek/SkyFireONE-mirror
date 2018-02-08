@@ -1,3 +1,10 @@
+![logo](https://abload.de/img/15_14_skyfire_logoqyj68.png)
+
+## Build Status
+[![Build Status](https://travis-ci.org/Bootz/SkyFireONE_NG.svg?branch=master)](https://travis-ci.org/Bootz/SkyFireONE_NG)
+
+[![Build status](https://ci.appveyor.com/api/projects/status/oqwxng14asfpsvhn/branch/master?svg=true)](https://ci.appveyor.com/project/tanteddeveloper/skyfireone-ng/branch/master)
+
 ## Introduction		
 	
 (SFO) SkyFireONE is a MMORPG Framework based mostly on C++.          
