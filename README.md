@@ -1,9 +1,9 @@
 ![logo](https://abload.de/img/15_14_skyfire_logoqyj68.png)
 
 ## Build Status
-[![Build Status](https://travis-ci.org/Bootz/SkyFireONE_NG.svg?branch=master)](https://travis-ci.org/Bootz/SkyFireONE_NG)
+[![Build Status](https://travis-ci.org/Ascentrek/SkyFireONE-mirror.svg?branch=master)](https://travis-ci.org/Ascentrek/SkyFireONE-mirror)
 
-[![Build status](https://ci.appveyor.com/api/projects/status/oqwxng14asfpsvhn/branch/master?svg=true)](https://ci.appveyor.com/project/tanteddeveloper/skyfireone-ng/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/4wd2h9rfi719c2w9?svg=true)](https://ci.appveyor.com/project/Ascentrek/skyfireone-mirror)
 
 ## Introduction		
 	
